@@ -1,11 +1,19 @@
 ---
 name: review-sweep
-description: "Pre-PR review with two-pass analysis and Fix-First execution. Pass 1: critical (SQL safety, race conditions, LLM boundaries, enum completeness). Pass 2: informational (side effects, dead code, test gaps, frontend, performance). Auto-fixes mechanical issues, batches judgment calls. Triggers on: review sweep, regression check, final review, pre-PR review."
+description: Review branch changes before a PR using critical and informational passes for data safety, concurrency, LLM boundaries, test gaps, frontend behavior, and performance. Use for review sweep, regression check, final review, or pre-PR review requests. Report findings without editing by default; apply fixes only when the user explicitly requests fix mode.
 ---
 
 # Review Sweep — Pre-Landing PR Review
 
-Two-pass review with Fix-First execution. Run after tests pass, before opening a PR.
+Run a two-pass review after tests pass and before opening a PR.
+
+## Modes
+
+- **Review** (default): inspect and report only. Do not modify files.
+- **Fix** (`--fix` or an explicit request to fix findings): propose the intended
+  fixes, apply only authorized changes, and verify them.
+
+A request to review, inspect, check, or audit is not authorization to edit.
 
 ## Workflow
 
@@ -117,33 +125,37 @@ If any `.vue`, `.css`, `.scss`, or `.html` files changed:
 - Interaction states: hover, focus, active, disabled on all interactive elements
 - Accessibility: focus indicators, color contrast, semantic HTML
 
-### Step 4 — Fix-First execution
+### Step 4 — Report or fix
 
 Classify every finding:
 
-**AUTO-FIX (apply without asking):**
+**MECHANICAL CANDIDATE:**
 - Dead code / unused variables
-- N+1 queries (add eager loading)
 - Stale comments contradicting code
-- Magic numbers → named constants
-- Missing LLM output validation (add basic guards)
 - Variables assigned but never read
-- Inline styles, O(n*m) view lookups
 
-**ASK (batch into one user-input request):**
+**JUDGMENT REQUIRED:**
 - Security (auth, XSS, injection)
 - Race conditions
+- Query strategy or N+1 fixes
+- LLM validation and fallback behavior
 - Design decisions
-- Large fixes (>20 lines)
+- Performance rewrites and view-lookup changes
 - Enum completeness
 - Removing functionality
 - Anything changing user-visible behavior
 
-**Rule of thumb:** If the fix is mechanical and a senior engineer would apply it without discussion → AUTO-FIX. If reasonable engineers could disagree → ASK.
+In Review mode, report both categories without editing.
 
-Critical findings default toward ASK. Informational findings default toward AUTO-FIX.
+In Fix mode:
 
-Apply all AUTO-FIX items first with one-line summaries. Then batch all ASK items into a single question with recommended fixes for each.
+1. Show the proposed files and behavioral effect of each fix.
+2. Apply mechanical candidates covered by the user's explicit fix request.
+3. Ask before every judgment-required fix or scope expansion.
+4. Run focused tests after each coherent group of fixes.
+5. Re-run the relevant review checks and report remaining findings.
+
+Do not treat issue severity as edit authorization.
 
 ### Step 5 — Test coverage audit
 Map changed code paths against existing tests:
@@ -170,8 +182,11 @@ Flag paths marked GAP that are high-risk (auth, payments, data mutation).
 
 ### Pre-Landing Review: N issues (X critical, Y informational)
 
-**AUTO-FIXED:**
-- [file:line] Problem → fix applied
+**FINDINGS:**
+- [file:line] Problem → recommended fix
+
+**FIXED (fix mode only):**
+- [file:line] Problem → verified fix
 
 **NEEDS INPUT:**
 - [file:line] Problem description
@@ -196,6 +211,7 @@ Flag paths marked GAP that are high-risk (auth, payments, data mutation).
 
 ## Notes
 - Only flag items that actually apply to the diff — no generic advice
+- Default to a read-only report unless fix mode was explicitly requested
 - If a category has no issues, skip it entirely
 - Be specific: include file paths and line numbers for every item
 - Be terse: one line per problem, one line per fix. No preamble.

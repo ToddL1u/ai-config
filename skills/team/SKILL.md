@@ -1,6 +1,6 @@
 ---
 name: team
-description: "AI team orchestrator — single entry point for all work. Classifies your task and delegates to the right agents and skills automatically. Triggers on \"team\", \"help me with\", \"let's work on\", \"I need to\"."
+description: Coordinate a task across multiple agents or specialized skills when the user explicitly asks to use a team, delegate work, split work among agents, run parallel agents, or orchestrate a multi-agent workflow. Do not trigger for ordinary requests such as "help me" or "I need to" unless collaboration is explicitly requested.
 ---
 
 # Team — AI Team Orchestrator
@@ -39,7 +39,7 @@ Pick ONE task type:
 
 | Task Type | Signal Words | Route |
 |-----------|-------------|-------|
-| **Product Planning** | "idea", "MVP", "product", "should I build", "scope" | → product-planning workflow |
+| **Product Planning** | "idea", "MVP", "product", "should I build", "scope" | → `mvp-plan` skill |
 | **Feature (simple)** | "build", "add", "create" + single concern | → MVP Flow (Step 3a) |
 | **Feature (complex)** | multi-layer, touches UI + API + data, "thorough", "careful" | → Full Flow (Step 3b) |
 | **Bug Fix** | "fix", "broken", "error", "not working", "bug" | → Bug Flow (Step 3c) |
@@ -124,7 +124,8 @@ Steps completed: [X/Y]
 - [anything that wasn't covered]
 ```
 
-Then ask: **"Ready to create a PR?"**
+For completed code changes, ask: **"Ready to create a PR?"** Do not offer a PR
+for planning, exploration, documentation-only, or other non-code work.
 
 If yes, invoke the `pr` workflow to fill the repository template. Use an
 available GitHub connector, CLI, or browser capability only after the user has

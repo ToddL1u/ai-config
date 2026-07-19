@@ -35,7 +35,7 @@ The installer links every skill to:
 - `~/.claude/skills/<name>` for Claude Code.
 - `~/.agents/skills/<name>` for Codex, its supported user-skill location.
 
-It also links `AGENTS.md` to `~/.claude/CLAUDE.md` and
+It also copies `AGENTS.md` to `~/.claude/CLAUDE.md` and
 `~/.codex/AGENTS.md`. It does not link or overwrite live settings.
 
 When a destination already exists, apply mode moves that one path into

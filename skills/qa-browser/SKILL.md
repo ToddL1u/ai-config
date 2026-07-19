@@ -1,117 +1,108 @@
 ---
 name: qa-browser
-description: "Real browser QA using Chrome automation. Navigates the app, verifies UI behavior, captures screenshots, and runs an auto-fix loop (find issue → fix → verify). Triggers on: qa browser, browser test, visual qa, check in browser, verify in browser."
+description: Verify a running web application through browser automation, including layout, interactions, accessibility, console errors, and responsive behavior. Use for browser QA, visual QA, browser tests, or requests to verify an app in a browser. Report without editing by default; fix and re-verify only when the user explicitly requests fix mode.
 ---
 
-# QA Browser — Real Browser Verification
+# QA Browser
 
-Use an available browser-automation capability to verify the app in a real
-browser. Find visual bugs, interaction issues, and broken flows, then fix and
-re-verify when the user has authorized implementation work.
+Verify the app in a real browser and distinguish evidence gathering from code
+modification.
+
+## Modes
+
+- **QA** (default): navigate, inspect, capture evidence, and report. Do not edit
+  source files.
+- **Fix** (`--fix` or an explicit request to fix browser findings): propose,
+  implement, and re-verify authorized fixes.
+
+A request to check or verify in the browser does not authorize code changes.
 
 ## Prerequisites
-- The app must be running locally (dev server)
-- A browser automation capability must be available and connected
-- If no browser capability is available, explain the dependency and stop
-  instead of pretending to have verified the UI
+
+- Require a running application and an available browser-automation capability.
+- Infer the URL and flow from context when reliable; otherwise ask.
+- If the app or browser is unavailable, identify the missing dependency instead
+  of claiming verification.
 
 ## Workflow
 
-### Step 0 — Get browser context
-Inspect the browser capability's current tabs or pages. Check whether the app is already open.
+### 1. Establish scope and baseline
 
-### Step 1 — Determine test scope
-Ask the user (or infer from context):
-- What URL to test? (e.g., `http://localhost:5173`)
-- What flow to verify? (e.g., "upload photo flow", "login page", "the whole app")
-- Any specific things to check? (e.g., "mobile layout", "dark mode", "error states")
+Record the URL, flow, authenticated state, relevant test data, and requested
+viewports. Inspect the visible and accessible page state and capture a baseline
+screenshot.
 
-### Step 2 — Navigate and capture baseline
-1. Open or navigate to the target URL
-2. Inspect the visible page and accessible DOM state
-3. Take a screenshot for baseline reference
+### 2. Verify systematically
 
-### Step 3 — Systematic verification
-For each page/flow, check:
+Check the relevant areas:
 
-**Layout & Visual**
-- Elements render correctly (no overlapping, clipping, or overflow)
-- Responsive behavior at current viewport (resize the browser when supported)
-- Images load correctly
-- Text is readable (no truncation, correct fonts)
-- Consistent spacing and alignment
+- **Layout:** overlap, clipping, overflow, spacing, typography, images, and
+  responsive behavior.
+- **Interaction:** controls, forms, validation, loading and error states,
+  navigation, and repeated interactions.
+- **Accessibility:** keyboard order, visible focus, accessible names, landmarks,
+  semantics, and contrast when measurable.
+- **Runtime:** relevant console errors, warnings, and failed network requests
+  when the browser capability exposes them.
 
-**Interaction**
-- Buttons/links are clickable and respond
-- Forms accept input and validate correctly
-- Loading states appear during async operations
-- Error states display when triggered
-- Navigation works (back/forward, route changes)
+Use semantic element lookup where possible. Avoid blocking JavaScript dialogs
+and irreversible actions unless they are explicitly in scope.
 
-**Accessibility**
-- Focus indicators visible on keyboard navigation
-- Interactive elements have accessible names
-- Color contrast sufficient
-- Screen reader landmarks present
+### 3. Classify findings
 
-**Console Errors**
-- Inspect browser console messages and network failures when supported
-- Flag any JavaScript errors, failed network requests, or warnings
+- **Mechanical candidate:** clear typo, missing class, or narrowly scoped CSS
+  defect with one obvious correction.
+- **Judgment required:** behavior, UX, design, data, authentication, destructive
+  action, or third-party failure.
 
-### Step 4 — Auto-fix loop
-For each issue found:
+In QA mode, report both categories with evidence and recommendations but make no
+edits.
 
-1. **Capture**: Note the issue with file:line reference if identifiable
-2. **Fix**: Edit the source file to resolve the issue
-3. **Verify**: Wait for hot-reload, then re-check in browser
-4. **Confirm**: Take a screenshot showing the fix
+### 4. Fix only in Fix mode
 
-Repeat until the page/flow is clean.
+For each authorized fix:
 
-Classification:
-- **AUTO-FIX**: CSS issues, missing classes, layout bugs, typos, console warnings from own code
-- **ASK**: Behavioral bugs, design decisions, UX changes, third-party errors
+1. Show the issue, intended files, and expected behavior change.
+2. Ask before judgment-required changes or scope expansion.
+3. Apply the smallest coherent fix.
+4. Wait for reload, repeat the failing interaction, and capture the result.
+5. Run relevant automated checks when available.
 
-### Step 5 — Cross-breakpoint check (if applicable)
-Test at key breakpoints:
-- Mobile: 375px width
-- Tablet: 768px width
-- Desktop: 1280px width
+Do not repeat the fix loop in QA mode.
 
-Resize using the available browser capability. Only check breakpoints relevant to the project.
+### 5. Check relevant breakpoints
 
-### Step 6 — Report
+Use project breakpoints when known. Otherwise use only relevant defaults:
+
+- mobile: 375px;
+- tablet: 768px;
+- desktop: 1280px.
+
+Do not claim a breakpoint passed unless it was actually inspected.
+
+## Report
+
+Include:
 
 ```markdown
-## QA Browser Report: [page/flow name]
+## QA Browser Report: [page or flow]
 
-### Environment
-- URL: http://localhost:XXXX
-- Viewport: WxH
+- URL: ...
+- Mode: QA / Fix
+- Viewports: ...
 
-### Issues Found: N
-**AUTO-FIXED:**
-- [file:line] Issue → fix applied ✅
+### Findings
+- [severity] [evidence] Issue → recommended fix
 
-**NEEDS INPUT:**
-- [file:line] Issue description
-  Recommended fix: ...
+### Fixed and verified
+- [fix mode only] Issue → fix → verification evidence
 
-### Console Errors
-- [count] errors / [count] warnings (or "Clean")
-
-### Breakpoints Tested
-- Mobile (375px): ✅ / ⚠️
-- Tablet (768px): ✅ / ⚠️
-- Desktop (1280px): ✅ / ⚠️
+### Console and network
+- Relevant errors and warnings, or "clean"
 
 ### Verdict
-[PASS / NEEDS WORK — summary]
+PASS / NEEDS WORK / BLOCKED
 ```
 
-## Notes
-- Avoid triggering modal JavaScript dialogs because they can block automation
-- If a page element isn't responding after 2-3 attempts, stop and ask the user
-- Filter console inspection to errors and relevant warnings to avoid verbose output
-- Prefer semantic element lookup over manual DOM traversal
-- If the dev server isn't running, ask the user to start it rather than starting it yourself
+If an element fails to respond after two or three evidence-based attempts, stop
+and report the blocker instead of clicking blindly.

@@ -77,6 +77,34 @@ manage_link() {
   echo "linked: $destination_path"
 }
 
+manage_copy() {
+  local source_path="$1"
+  local destination_path="$2"
+
+  if [[ -f "$destination_path" && ! -L "$destination_path" ]] && cmp -s "$source_path" "$destination_path"; then
+    echo "already copied: $destination_path"
+    return
+  fi
+
+  if [[ -e "$destination_path" || -L "$destination_path" ]]; then
+    if [[ "$MODE" == "--check" ]]; then
+      echo "copy needed: $destination_path"
+      CHANGE_COUNT=$((CHANGE_COUNT + 1))
+      return
+    fi
+    backup_one "$destination_path"
+  elif [[ "$MODE" == "--check" ]]; then
+    echo "missing copy: $destination_path"
+    CHANGE_COUNT=$((CHANGE_COUNT + 1))
+    return
+  fi
+
+  ensure_parent "$destination_path"
+  cp "$source_path" "$destination_path"
+  CHANGE_COUNT=$((CHANGE_COUNT + 1))
+  echo "copied: $destination_path"
+}
+
 manage_legacy_codex_skill() {
   local skill_name="$1"
   local legacy_path="$HOME/.codex/skills/$skill_name"
@@ -112,8 +140,8 @@ manage_legacy_claude_command() {
   CHANGE_COUNT=$((CHANGE_COUNT + 1))
 }
 
-manage_link "$REPO_ROOT/AGENTS.md" "$HOME/.codex/AGENTS.md"
-manage_link "$REPO_ROOT/AGENTS.md" "$HOME/.claude/CLAUDE.md"
+manage_copy "$REPO_ROOT/AGENTS.md" "$HOME/.codex/AGENTS.md"
+manage_copy "$REPO_ROOT/AGENTS.md" "$HOME/.claude/CLAUDE.md"
 manage_legacy_claude_command
 
 for skill_path in "$REPO_ROOT"/skills/*; do

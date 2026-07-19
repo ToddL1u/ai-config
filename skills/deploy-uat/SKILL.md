@@ -1,6 +1,6 @@
 ---
 name: deploy-uat
-description: Deploy frontend projects to UAT through the Jenkins API. Supports multiple repositories and optional country and repository arguments. Use when the user asks to deploy UAT or deploy a frontend repository to UAT.
+description: Deploy an allowed frontend repository and country set to UAT through Jenkins with explicit confirmation, strict input validation, bounded queue/build polling, and a final status report. Use when the user explicitly asks to deploy a supported frontend repository to UAT.
 ---
 
 # Deploy UAT
@@ -12,7 +12,7 @@ Trigger frontend UAT deployment via Jenkins API with build status polling and ma
 - `$ARGUMENTS` = country codes + optional `--repo=<name>`
 - Default country: `ng`, default repo: `fe-web-mvc`
 - Valid countries: ng, gh, ke, zm, tz, ug, za, int, br, ng1, ng2, ng3, ng4, ng5, ug2, int1
-- Valid repos: `fe-web-mvc`, `fe-management` (any repo under `job/TW-FE/job/{repo}/job/uat`)
+- Valid repos: `fe-web-mvc`, `fe-management`
 - Examples:
   - no arguments → deploy fe-web-mvc to ng
   - `ng,zm` → deploy fe-web-mvc to ng,zm
@@ -23,7 +23,11 @@ Trigger frontend UAT deployment via Jenkins API with build status polling and ma
 
 ### Step 1: Parse arguments
 
-Parse `$ARGUMENTS` for country codes and `--repo=<name>`. If countries empty, default to `ng`. If repo not specified, default to `fe-web-mvc`. Normalize country separators (space, comma, slash) to comma-delimited.
+Parse `$ARGUMENTS` for country codes and `--repo=<name>`. If countries are
+empty, default to `ng`. If the repo is absent, default to `fe-web-mvc`.
+Normalize country separators to commas, deduplicate values, and reject every
+unknown country, repository, flag, or extra positional argument before asking
+for confirmation. Do not pass unchecked values into the Jenkins URL.
 
 ### Step 2: Confirm with user
 
@@ -66,7 +70,9 @@ bash "{skill-directory}/scripts/deploy.sh" --poll-queue={QUEUE_URL} --repo={repo
 ```
 
 Use the current agent's background-process capability when available. Otherwise
-poll in the foreground and keep the user informed.
+poll in the foreground and keep the user informed. The script bounds queue
+polling to 60 seconds and build polling to 60 minutes. A timeout is a failure,
+not a successful or unknown build.
 
 ### Step 5: Notify on completion
 
@@ -76,4 +82,6 @@ When the background task completes, parse the output for `BUILD_RESULT`. Send ma
 osascript -e 'display notification "UAT deploy {repo} {countries}: {result}" with title "Jenkins" sound name "Glass"'
 ```
 
-Report the final result (SUCCESS/FAILURE) and build URL to the user.
+Report the final result (SUCCESS/FAILURE), build URL, and timeout or network
+reason when applicable. Never retry by triggering another build; polling must
+continue from the original `QUEUE_URL` only.

@@ -1,196 +1,138 @@
 ---
 name: uat-merge
-description: "Safely merge a feature branch into UAT: switches branch, syncs latest, resolves conflicts (favoring UAT), creates merge commit with conflict summary, then pushes. Triggers on: uat merge, merge to uat, merge into uat"
+description: Safely merge a feature branch into UAT with explicit conflict decisions, a merge commit, confirmed push, restoration of the original branch and worktree, and optional deployment. Use when the user asks to merge into UAT or run a UAT merge.
 ---
 
-# uat-merge — Merge a Feature Branch into UAT
+# UAT Merge
 
-Safely merge a source branch into `uat` with conflict resolution, a SourceTree-style merge commit, and a confirmed push.
+Merge a source branch into `uat` without losing feature work or restoring local
+changes onto the wrong branch.
+
+## State to preserve
+
+Before changing anything, record:
+
+- `ORIGINAL_BRANCH` from `git branch --show-current`;
+- `SOURCE_BRANCH` from the user's argument, or `ORIGINAL_BRANCH` after confirmation;
+- whether this workflow created a stash;
+- every conflicted file and the resolution the user approved.
+
+Stop on a detached HEAD. Verify both `SOURCE_BRANCH` and `origin/uat` exist
+before switching branches.
 
 ## Workflow
 
-### Step 1 — Identify source branch
+### 1. Confirm the source
 
-If the user did not specify a branch:
-1. Run `git branch --show-current` to get the current local branch.
-2. Ask:
-   > "Merge `<current-branch>` into UAT? (y to confirm, or type a different branch name)"
-3. If the user confirms with `y` or equivalent: use the current branch.
-4. If the user types a branch name: use that instead.
+If the user did not specify a source, show `ORIGINAL_BRANCH` and ask whether to
+merge it into `uat`. Reject `uat` itself as the source. Do not guess another
+branch name.
 
-Store as `SOURCE_BRANCH`.
+### 2. Preserve the original worktree
 
----
+Run `git status --short`. If it is dirty, offer:
 
-### Step 2 — Switch to UAT safely
+1. Create a temporary stash including untracked files with a descriptive label.
+2. Stop so the user can handle the changes manually.
 
-**2a. Check for dirty state**
+Only stash after explicit approval. Record the exact stash object created; do
+not assume an older `stash@{0}` belongs to this workflow.
 
-Run: `git status --short`
+### 3. Synchronize UAT
 
-If the working tree is dirty (any output), offer two options:
-> "You have uncommitted changes. How would you like to proceed?
-> (A) Stash them now — I'll restore them after the merge
-> (B) I'll handle it manually — let me know when ready"
-
-- If A: run `git stash` and note that stash must be popped at the end.
-- If B: pause and wait for user confirmation before continuing.
-- Do NOT run `git reset` or discard changes without explicit user approval.
-
-**2b. Fetch and checkout UAT**
+Fetch `origin`. Switch to local `uat`, or create it from `origin/uat` when it
+does not exist. Compare local and remote with:
 
 ```bash
-git fetch origin
+git rev-list --left-right --count uat...origin/uat
 ```
 
-Check if `uat` exists locally (`git branch --list uat`):
-- If yes: `git checkout uat`
-- If no: `git checkout -b uat origin/uat`
+If local `uat` is ahead or the branches have diverged, stop rather than pushing
+unreviewed local commits. If local `uat` is behind, fast-forward it:
 
-**2c. Ensure UAT is at the latest remote commit**
+```bash
+git merge --ff-only origin/uat
+```
 
-Run: `git status -sb`
+Stop without resetting, rebasing, or discarding anything whenever synchronization
+is not a clean remote-only fast-forward. Return to the original branch and
+restore this workflow's stash using the cleanup procedure.
 
-Parse the output for `[behind N]`:
-- If behind: run `git pull origin uat --ff-only`
-- If `--ff-only` fails (diverged): stop and warn:
-  > "UAT has diverged from origin/uat and cannot be fast-forwarded. Please resolve this manually (rebase or reset), then re-run the skill."
-  Do NOT force-reset. Wait for user to handle it.
-- If already up to date: proceed.
-
----
-
-### Step 3 — Merge source branch
+### 4. Start the merge
 
 Run:
+
 ```bash
-git merge "$SOURCE_BRANCH" --no-commit --no-ff
+git merge "<source-branch>" --no-commit --no-ff
 ```
 
-Using `--no-commit` so conflicts can be inspected before committing.
+If the command fails for a reason other than merge conflicts, run
+`git merge --abort` when a merge is active, then perform cleanup and report the
+error.
 
-**If no conflicts:** proceed to Step 4.
+### 5. Resolve every conflict explicitly
 
-**If conflicts exist:**
+For each path from `git diff --name-only --diff-filter=U`:
 
-For each conflicted file (`git diff --name-only --diff-filter=U`):
+1. Read the conflict in its surrounding file and compare the base, UAT (`ours`),
+   and source (`theirs`) versions.
+2. Explain the behavioral difference and recommend a resolution.
+3. Ask the user to choose UAT, source, or a proposed combined edit.
+4. Apply only the approved resolution, verify no conflict markers remain in the
+   file, and stage that path explicitly.
 
-1. Check if the conflicting lines on the `theirs` side appear in `$SOURCE_BRANCH`'s history:
-   - Run: `git log "$SOURCE_BRANCH" --oneline -- <file>` and compare conflict markers.
-2. **Standard conflict** (source branch vs UAT changes):
-   - Keep UAT's version: `git checkout --ours -- <file>`
-   - Run `git add <file>`
-3. **Third-party conflict** (lines that are NOT from `$SOURCE_BRANCH` — already merged into UAT by someone else):
-   - Show the conflict diff to the user:
-     ```
-     Conflict in <file> — involves changes not from your branch:
-     <<<<<<< HEAD (uat)
-     [their lines]
-     =======
-     [source branch lines]
-     >>>>>>> SOURCE_BRANCH
-     ```
-   - Ask: "Which version should we keep for `<file>`?
-     (ours = keep UAT version / theirs = use source branch version / diff = show full file)"
-   - Apply the user's choice and `git add <file>`.
+Never automatically prefer UAT or source. Never use `git add .` to mark all
+conflicts resolved. After all decisions, verify that
+`git diff --name-only --diff-filter=U` is empty and show the staged merge diff.
 
-After all files are resolved: `git add .`
+### 6. Create the merge commit
 
-Track all resolved conflict file paths for the commit message.
+Create a merge commit only after the user has approved all conflict decisions.
+Use:
 
----
-
-### Step 4 — Commit (always a merge commit)
-
-`origin/uat` only accepts merge commits. Never fast-forward — always create a merge commit regardless of history.
-
-Create a merge commit with this message format:
-
-```
-Merge branch '$SOURCE_BRANCH' into uat
+```text
+Merge branch '<source-branch>' into uat
 
 Conflicts resolved:
-- path/to/file1.ext (kept UAT version)
-- path/to/file2.ext (user chose: source branch version)
-
-Merged by: uat-merge skill
+- <path> (<approved resolution>)
 ```
 
-If no conflicts occurred:
-```
-Merge branch '$SOURCE_BRANCH' into uat
-```
+Omit the conflict section when there were none. Verify the resulting commit has
+two parents before proceeding.
 
-Run: `git commit -m "<message>"`
+### 7. Confirm and push
 
----
+Show the source, destination, merge commit, and conflict summary. Ask for
+confirmation, then run `git push origin uat`.
 
-### Step 5 — Confirm and push
+If the push is rejected because `origin/uat` advanced, do not automatically
+rebase, reset, force-push, or retry. Report that local `uat` retains the merge
+commit and must be reconciled with the new remote state. Then perform cleanup.
 
-Show a summary:
-```
-Ready to push:
-  Branch  : uat → origin/uat
-  Merged  : $SOURCE_BRANCH
-  Conflicts: N files resolved
-  Commit  : <short hash> <first line of commit message>
-```
+### 8. Restore the original context
 
-Ask:
-> "Push to origin/uat? (y/n)"
+After a successful push—or before stopping after any recoverable failure:
 
-If confirmed: `git push origin uat`
+1. Abort an active merge when the operation is being abandoned.
+2. Switch back to `ORIGINAL_BRANCH`.
+3. If this workflow created a stash, apply that exact stash only now.
+4. Drop it only after the apply succeeds and the restored worktree is verified.
+5. If applying the stash conflicts, keep the stash, report the conflict, and do
+   not claim cleanup succeeded.
 
-**If push is rejected (non-fast-forward / new commits on origin/uat):**
+Never restore a feature-branch stash while checked out on `uat`.
 
-> `origin/uat` has new commits. Rebasing local `uat` onto `origin/uat`…
+### 9. Offer deployment
 
-Run:
-```bash
-git fetch origin
-git rebase --rebase-merges origin/uat
-```
+After a successful push and successful cleanup, offer to invoke `deploy-uat`
+with the detected repository and explicit country selection. Deployment is a
+separate external action and still requires its own confirmation.
 
-- `--rebase-merges` is required to preserve the merge commit structure. Plain `git rebase` will flatten the merge commit into a linear commit, which `origin/uat` will reject.
-- If the rebase fails with conflicts, stop and tell the user:
-  > "Rebase onto origin/uat has conflicts. Please resolve them manually, then run `git rebase --continue`, and re-push."
-  Do NOT auto-resolve rebase conflicts — wait for user.
-- If rebase succeeds, push again: `git push origin uat`
-- If push fails again, stop and report the error — do not loop.
+## Safety invariants
 
----
-
-### Step 6 — Restore stash (if applicable)
-
-If changes were stashed in Step 2a, run:
-```bash
-git stash pop
-```
-
-Notify the user: "Your stashed changes have been restored."
-
----
-
-### Step 7 — Deploy to UAT
-
-After a successful push, trigger the deploy-uat skill.
-
-1. Detect the current repo from the working directory name (e.g. `fe-management`, `fe-web-mvc`).
-2. Default country: `ng`.
-3. Ask the user:
-   > "Deploy `{repo}` to UAT? Default country: `ng`. Enter additional countries (comma-separated) or press Enter to proceed with `ng` only."
-4. Collect the user's response:
-   - If empty/enter: use `ng`
-   - Otherwise: combine `ng` with any additional countries provided (dedup)
-5. Invoke the deploy-uat skill with arguments: `{countries} --repo={repo}`
-
----
-
-## Notes
-
-- Never `git reset --hard` without explicit user confirmation.
-- `--ff-only` is used for UAT sync to avoid silent divergence.
-- `origin/uat` ONLY accepts merge commits — fast-forward and linear pushes will be rejected. Always use `--no-ff` (already set in Step 3) and never skip the merge commit.
-- If push is rejected due to new remote commits, use `git rebase --rebase-merges origin/uat` (NOT plain `git rebase`) to replay the merge commit on top. Plain rebase flattens merge commits into linear commits, which `origin/uat` rejects.
-- Unit tests are skipped here — CI runs them automatically on push.
-- If anything goes wrong mid-merge, run `git merge --abort` and explain what happened before retrying.
+- Never use `git reset --hard`, force-push, or discard local changes.
+- Never resolve semantic conflicts without user approval.
+- Never leave the user on `uat` unless `uat` was their original branch.
+- Never drop a stash until its contents have been restored successfully.
+- Report the current branch, worktree state, merge state, and stash state after
+  any failure.

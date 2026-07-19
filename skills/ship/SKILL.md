@@ -16,13 +16,17 @@ Single command to go from "code done" to "PR ready". Chains testing, review, and
 ### Step 1 — Pre-flight checks
 ```bash
 # Verify we're on a feature branch
-git branch --show-current  # must NOT be main or develop
+git branch --show-current
 
 # Verify clean working tree
 git status --porcelain  # warn if uncommitted changes
 ```
 
-If on main/develop, stop: "Create a feature branch first."
+Resolve `BASE_BRANCH` from an existing PR, an explicit user value, or
+`refs/remotes/origin/HEAD`; ask if ambiguous. If the current branch equals the
+base or is a protected integration branch such as `main`, `master`, `develop`,
+or `uat`, stop: "Create a feature branch first."
+
 If uncommitted changes exist, invoke the `commit-chunk` skill. Follow its full
 interactive workflow: present the complete plan, review every chunk, and wait
 for explicit approvals before committing. Do not proceed to Step 2 until the
@@ -37,10 +41,13 @@ Detect the test runner from the project:
 If tests fail, stop and report failures. Do not continue.
 
 ### Step 3 — Review sweep
-Invoke the `review-sweep` skill for the full two-pass Fix-First review.
+Invoke `review-sweep` in its default read-only mode.
 
-- If AUTO-FIX items were applied, create a commit: `fix: auto-fix review findings`
-- If ASK items remain, present them to the user. Wait for resolution before continuing.
+- If findings require changes, show them and ask whether to invoke
+  `review-sweep --fix`. Do not modify code merely because `ship` ran a review.
+- If authorized fixes are applied, run the relevant tests again and use
+  `commit-chunk` to review and commit those changes.
+- If judgment-required items remain, wait for resolution before continuing.
 - If verdict is NEEDS WORK with critical blockers, stop.
 
 ### Step 4 — CHANGELOG
@@ -60,15 +67,21 @@ git commit -m "chore: update CHANGELOG"
 ```
 
 ### Step 6 — Create PR
-Invoke the `pr` skill using the Skill tool to auto-fill the PR template. After the PR content is generated, you MUST explicitly run the `pbcopy` clipboard step (Step 9 of the pr skill) — do not skip it. Confirm to the user that the template has been copied to their clipboard.
+Invoke `pr --create` and pass the same resolved base branch used for the
+CHANGELOG range. The `pr` skill must use that base consistently for its diff and
+the created PR. Do not depend on numbered steps or clipboard behavior from
+another skill version.
+
+If PR creation fails, report the error and return the generated body so the user
+can retry. Do not claim that a PR was created and do not silently change bases.
 
 ### Step 7 — Report
 ```markdown
 ## Ship Report
 
-- Branch: feature/xxx → main
+- Branch: feature/xxx → <base>
 - Tests: ✅ passed
-- Review: ✅ clean (N auto-fixes applied)
+- Review: ✅ clean (N authorized fixes applied)
 - CHANGELOG: updated
 - PR: <url>
 ```

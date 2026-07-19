@@ -80,3 +80,9 @@ Turn requests into concrete, verifiable success criteria and loop until they are
 - If verification cannot be performed, clearly state what was not verified and why.
 
 Success means the requested behavior is demonstrably correct, the change is minimal, and no unrelated behavior was modified.
+
+### 5. Context Management
+
+- When reliable context-window usage information is available and usage reaches 60% or higher, pause at the next safe boundary and ask the user whether they would like to compact the context.
+- Do not compact the context until the user confirms.
+- Do not estimate context usage when the runtime does not expose it.
