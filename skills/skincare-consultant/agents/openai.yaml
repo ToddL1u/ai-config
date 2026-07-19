@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skincare Consultant"
+  short_description: "Evaluate skincare fit, overlap, and routines"
+  default_prompt: "Use $skincare-consultant to evaluate this product against my skin profile and current routine."

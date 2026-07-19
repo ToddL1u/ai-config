@@ -1,0 +1,4 @@
+interface:
+  display_name: "Daily Digest Cloud"
+  short_description: "Build and publish the daily digest from Notion sources"
+  default_prompt: "Use $daily-digest-cloud to publish today's Traditional Chinese Daily Digest."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit Chunk"
+  short_description: "Split and commit changes in safe chunks"
+  default_prompt: "Use $commit-chunk to review and commit my uncommitted changes in safe sequential chunks."
