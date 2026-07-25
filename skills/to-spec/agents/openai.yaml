@@ -1,0 +1,6 @@
+interface:
+  display_name: "To Spec"
+  short_description: "Turn resolved context into an approved specification"
+  default_prompt: "Use $to-spec to synthesize this resolved discussion into an approved specification."
+policy:
+  allow_implicit_invocation: false
