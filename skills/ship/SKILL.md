@@ -41,14 +41,19 @@ Detect the test runner from the project:
 If tests fail, stop and report failures. Do not continue.
 
 ### Step 3 — Review sweep
-Invoke `review-sweep` in its default read-only mode.
+Invoke `review-sweep` in branch mode. Pass the resolved base branch; require it
+to use the merge base as the fixed point and review the complete clean branch.
+Resolve and pass the authoritative source and its stable reference or version
+using `review-sweep`'s source precedence. If none exists, pass that fact
+explicitly rather than deriving intent from commits.
 
-- If findings require changes, show them and ask whether to invoke
-  `review-sweep --fix`. Do not modify code merely because `ship` ran a review.
-- If authorized fixes are applied, run the relevant tests again and use
-  `commit-chunk` to review and commit those changes.
-- If judgment-required items remain, wait for resolution before continuing.
-- If verdict is NEEDS WORK with critical blockers, stop.
+- If the verdict is `NEEDS WORK`, stop and return both axes' findings to the
+  user. Fixes belong in a separate implementation/TDD step, followed by tests,
+  an intentional commit, and a fresh review from the same merge base.
+- If the verdict is `INCOMPLETE`, stop unless the user explicitly approves a
+  standards-only exception for this maintenance change.
+- Continue only on `READY` or an explicitly recorded
+  `READY — standards-only exception`.
 
 ### Step 4 — CHANGELOG
 If a `CHANGELOG.md` exists:
@@ -81,7 +86,7 @@ can retry. Do not claim that a PR was created and do not silently change bases.
 
 - Branch: feature/xxx → <base>
 - Tests: ✅ passed
-- Review: ✅ clean (N authorized fixes applied)
+- Review: ✅ <READY / READY — standards-only exception>
 - CHANGELOG: updated
 - PR: <url>
 ```

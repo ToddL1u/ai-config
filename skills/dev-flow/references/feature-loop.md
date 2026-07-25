@@ -26,7 +26,11 @@ Deliver the requested feature with objective evidence that its acceptance criter
    repository's required broader checks at completion. If the full suite is
    impractical, use the documented scoped alternative and report what was not
    run.
-6. **Review** — inspect the diff for correctness, regression risk, missing tests, and scope drift. Use `review-sweep` for the final pass.
+6. **Review** — invoke `review-sweep` in WIP mode with the fixed point recorded
+   before implementation and the authoritative sources recorded during
+   specification. If either isolated axis reports a blocker, return those
+   findings to the Implement step and repeat verification and review from the
+   same fixed point. Do not ask the review layer to edit.
 7. **Record** — update `.ai/feature-progress.md` with evidence, decisions, failed approaches, blockers, and the next slice.
 8. **Decide** — repeat from step 3, or enter a terminal state.
 
@@ -39,7 +43,9 @@ Deliver the requested feature with objective evidence that its acceptance criter
 
 ## Terminal states
 
-- `SUCCESS` — every acceptance criterion passes, required checks pass, and final review has no unresolved blocking finding.
+- `SUCCESS` — every acceptance criterion passes, required checks pass, and the
+  final review verdict is `READY`. A standards-only exception is valid only
+  when the user explicitly approved it for maintenance work.
 - `BLOCKED` — a product decision, missing access/input, scope expansion, or explicit approval is required.
 - `STALLED` — three distinct repairs produced no measurable progress on the same failure.
 - `EXHAUSTED` — a user-provided time, iteration, token, or cost budget was reached.

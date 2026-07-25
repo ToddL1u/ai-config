@@ -50,7 +50,7 @@ read, moved, or modified.
 ./scripts/check.sh
 ```
 
-The check validates skill frontmatter, unique names, the expected 34-skill
+The check validates skill frontmatter, unique names, the expected 36-skill
 catalog, hardcoded user paths, agent-specific tool names, and agent-specific
 mutable-state writes.
 

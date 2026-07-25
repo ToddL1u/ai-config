@@ -10,7 +10,10 @@ Implement one feature to verified completion without requiring turn-by-turn prom
 ## Start
 
 1. Read the request, repository instructions, and relevant project documentation.
-2. Classify the input:
+2. Before any implementation edit, record the current `HEAD` commit as the
+   review fixed point and capture the initial working-tree status. Keep this
+   fixed point for every implementation/review iteration in this run.
+3. Classify the input:
    - **Raw request** — derive acceptance criteria during the Specify step.
    - **Approved spec** — treat its goals, required behavior, non-goals,
      constraints, and testing decisions as authoritative. Record its stable
@@ -21,9 +24,14 @@ Implement one feature to verified completion without requiring turn-by-turn prom
      the active slice, and the spec's goals, non-goals, constraints, and testing
      decisions as its boundary. Record both stable references. Do not re-specify
      or split the ticket again.
-3. Read [references/feature-standards.md](references/feature-standards.md).
-4. Read [references/feature-loop.md](references/feature-loop.md) and follow it until a terminal state is reached.
-5. For work that will span multiple iterations or sessions, copy [assets/feature-progress.md](assets/feature-progress.md) to `.ai/feature-progress.md`. Reuse an existing file for the same feature; do not erase useful history.
+4. Record the authoritative review sources:
+   - approved ticket and parent spec references and versions;
+   - approved spec reference and version; or
+   - acceptance criteria, constraints, and non-goals derived from a raw
+     request.
+5. Read [references/feature-standards.md](references/feature-standards.md).
+6. Read [references/feature-loop.md](references/feature-loop.md) and follow it until a terminal state is reached.
+7. For work that will span multiple iterations or sessions, copy [assets/feature-progress.md](assets/feature-progress.md) to `.ai/feature-progress.md`. Reuse an existing file for the same feature; do not erase useful history.
 
 If an approved spec or ticket is missing information required to implement
 safely, conflicts with the repository, or has an incomplete blocker, enter
@@ -42,7 +50,9 @@ Use the repository's own commands and conventions. Do not assume a framework, pa
   Complete one red-green-cleanup cycle before writing the next failing test;
   never batch multiple new red tests. When no meaningful executable seam
   exists, record the TDD exception and use deterministic verification instead.
-- Invoke `review-sweep` after verification passes and before declaring success.
+- Invoke `review-sweep` in WIP mode after verification passes and before
+  declaring success. Pass the recorded fixed point and authoritative sources so
+  the review includes committed, staged, unstaged, and untracked work.
 - Use the current agent's plan or task tracker when available; keep `.ai/feature-progress.md` as the durable cross-session record.
 
 Do not pause merely to ask whether to proceed to the next loop step. Continue while the next action is safe, in scope, and objectively verifiable. Stop at the terminal conditions in the loop.
@@ -58,5 +68,6 @@ Report:
 - red and green evidence for each TDD cycle, or deterministic exception
   verification;
 - verification evidence;
+- review fixed point, source references, and overall verdict;
 - unresolved risks or decisions;
 - next action, if not successful.

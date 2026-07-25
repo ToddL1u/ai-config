@@ -1,217 +1,106 @@
 ---
 name: review-sweep
-description: Review branch changes before a PR using critical and informational passes for data safety, concurrency, LLM boundaries, test gaps, frontend behavior, and performance. Use for review sweep, regression check, final review, or pre-PR review requests. Report findings without editing by default; apply fixes only when the user explicitly requests fix mode.
+description: Run a read-only pre-landing review through independent specification and engineering-standards axes. Use for review sweep, regression check, final review, or pre-PR review of either uncommitted work in progress or a clean feature branch.
 ---
 
-# Review Sweep — Pre-Landing PR Review
+# Review Sweep
 
-Run a two-pass review after tests pass and before opening a PR.
+Freeze one review target, run `spec-review` and `standards-review` independently,
+then report their findings without merging their judgments.
 
-## Modes
+The entire review layer is read-only. A request to review never authorizes
+edits, fixes, commits, or requirement changes.
 
-- **Review** (default): inspect and report only. Do not modify files.
-- **Fix** (`--fix` or an explicit request to fix findings): propose the intended
-  fixes, apply only authorized changes, and verify them.
+## Resolve the target
 
-A request to review, inspect, check, or audit is not authorization to edit.
+Use one mode:
 
-## Workflow
+- **WIP mode** — require the baseline commit recorded before implementation.
+  Review all committed, staged, unstaged, and untracked changes since that
+  fixed point.
+- **Branch mode** — require a clean working tree and a resolved base branch.
+  Set the fixed point to `git merge-base <base> HEAD` and review the complete
+  branch through `HEAD`.
 
-### Step 0 — Detect base branch
-Run `gh pr view --json baseRefName 2>/dev/null` or fall back to repo default (`main` or `develop`). If unsure, ask the user.
+For direct invocation, recommend WIP mode from the current `HEAD` when the tree
+is dirty, or branch mode on a clean feature branch. If changes predate the
+current session, the base is ambiguous, or either choice could omit work, ask
+for the fixed point.
 
-### Step 1 — Verify there are changes
-Run `git diff origin/<base>...HEAD --stat`. If empty, stop: "Nothing to review."
+## Resolve authoritative sources
 
-### Step 1.5 — Scope drift detection
-Compare stated intent (commit messages via `git log origin/<base>..HEAD --oneline`, PR description if exists) against actual file changes.
+Use this order:
 
-Output:
-```
-Scope Check: [CLEAN / DRIFT DETECTED / REQUIREMENTS MISSING]
-Intent: <summary of commits/PR description>
-Delivered: <summary of actual file changes>
-```
-If DRIFT DETECTED or REQUIREMENTS MISSING, flag it before continuing.
+1. approved child ticket and parent spec supplied by `dev-flow`;
+2. an explicit path, URL, issue, or spec;
+3. raw-request acceptance criteria recorded by `dev-flow`;
+4. an issue or spec explicitly referenced by the PR.
 
-### Step 2 — Read all changed files
-Fetch the full diff (`git diff origin/<base>...HEAD`) and read every changed file in full.
+Never infer requirements from code, commits, or a branch name. If no
+authoritative source exists, standards review may still run, but spec review
+must report `NOT RUN — no authoritative source`.
 
-### Step 3 — Two-pass checklist review
+## Freeze the bundle
 
-#### Pass 1 — CRITICAL (highest severity)
+Before invoking reviewers, capture:
 
-**SQL & Data Safety**
-- String interpolation in SQL — use parameterized queries (Supabase: `.eq()/.filter()`, never template literals in `.rpc()`)
-- TOCTOU races: check-then-set that should be atomic
-- Bypassing RLS or validation with direct DB writes
-- N+1 queries: missing `.select()` joins for data used in loops
+- mode, fixed-point commit, target `HEAD`, and resolved base when applicable;
+- exact diff from the fixed point, including staged and unstaged changes;
+- the path and complete contents of every untracked file;
+- changed-file and commit lists;
+- exact authoritative requirement sources and stable references or versions;
+- applicable repository instruction and standards sources.
 
-**Race Conditions & Concurrency**
-- Read-check-write without unique constraint or duplicate key handling
-- Find-or-create without unique DB index
-- Status transitions without atomic WHERE old_status UPDATE
-- Unsafe HTML rendering (`v-html`, `dangerouslySetInnerHTML`) on user-controlled data (XSS)
+Serialize and fingerprint the complete frozen bundle, including code payloads,
+lists, requirement sources, standards sources, and their references or
+versions. After both reviews, recapture that complete bundle, recompute its
+fingerprint, and verify the target `HEAD` is unchanged. If either value differs,
+discard the results and freeze a new bundle. Do not rely on working-tree status
+alone because content can change while its status label remains the same.
 
-**LLM Output Trust Boundary**
-- LLM-generated values (emails, URLs, names) written to DB or displayed without format validation
-- Structured tool output accepted without type/shape checks before DB writes
-- User-provided prompts passed to LLM without sanitization or length limits
+## Run isolated axes
 
-**Enum & Value Completeness**
-When the diff introduces a new enum value, status string, or type constant:
-- Trace it through every consumer — READ each file that switches/filters/displays that value
-- Check allowlists/filter arrays for sibling values
-- Check `case`/`if-else` chains for missing branches
-- This requires reading code OUTSIDE the diff
+When isolated subagents are available, invoke `spec-review` and
+`standards-review` in parallel. Give each reviewer the same frozen bundle and
+only its own skill instructions. Do not expose either reviewer's analysis or
+findings to the other.
 
-#### Pass 2 — INFORMATIONAL (lower severity)
+If isolated reviewers are unavailable, run the axes sequentially with fresh
+analysis and label the result `Reduced isolation: sequential fallback`.
 
-**Edge Cases**
-- Unhandled states: null, undefined, empty arrays/objects, error responses, loading states
-- Boundary conditions: zero, negative numbers, max values, empty strings
-- Rapid user interactions: double clicks, concurrent requests
+Do not ask either reviewer to fix findings. Do not let one axis change the
+other's severity.
 
-**Conditional Side Effects**
-- Code paths that branch but forget a side effect on one branch
-- Log messages claiming an action happened when conditionally skipped
+## Aggregate
 
-**Dead Code & Consistency**
-- Variables assigned but never read
-- Comments/docstrings describing old behavior after code changed
-- Version mismatch between PR title and package.json/CHANGELOG
+Present both reports side by side without deduplicating, merging, reranking, or
+changing severity.
 
-**LLM Prompt Issues**
-- 0-indexed lists in prompts (LLMs return 1-indexed)
-- Prompt text listing tools/capabilities that don't match what's wired up
-- Token limits stated in multiple places that could drift
+Set the overall verdict in this order:
 
-**Test Gaps**
-- Changed source files without corresponding test assertions
-- New branches/conditions not covered by tests
-- Removed test cases not replaced
-- Negative-path tests asserting type/status but not side effects
+- `NEEDS WORK` if either axis has a blocking finding;
+- otherwise, if the spec axis did not run, use `INCOMPLETE`;
+- otherwise, use `READY`.
 
-**Flaky Test Risk**
-- `cy.wait()` / `setTimeout` / `setInterval` with hardcoded ms in tests
-- Tests depending on execution order or shared state
-- Non-deterministic data (random IDs, timestamps)
-
-**Code Quality**
-- `any` types in TypeScript
-- `console.log` / `console.debug` left in production code
-- Missing `aria-*` attributes on interactive elements
-- Hardcoded strings that should be constants or i18n keys
-- TODO/FIXME comments without linked issues
-
-**Performance & Bundle Impact**
-- Heavy dependency additions (moment.js → date-fns, full lodash → lodash-es)
-- Images without `loading="lazy"` or explicit width/height (CLS)
-- Large static assets committed (>500KB per file)
-- `useEffect`/`watch` with fetch depending on another fetch (request waterfall)
-- CSS `@import` in stylesheets (blocks parallel loading)
-
-**Frontend / Vue-specific**
-- Inline `<style>` blocks re-parsed every render (use scoped or utility classes)
-- O(n*m) lookups in templates (`.find()` in v-for — use computed Map/Set)
-- Reactive data that should be `shallowRef` or `shallowReactive`
-- Missing `key` on `v-for` loops
-
-### Step 3.5 — Design review (conditional)
-If any `.vue`, `.css`, `.scss`, or `.html` files changed:
-- Check for AI-slop indicators (generic placeholder text, inconsistent spacing)
-- Typography: verify consistent font sizes, weights, line-heights
-- Spacing: verify consistent use of Tailwind spacing scale
-- Interaction states: hover, focus, active, disabled on all interactive elements
-- Accessibility: focus indicators, color contrast, semantic HTML
-
-### Step 4 — Report or fix
-
-Classify every finding:
-
-**MECHANICAL CANDIDATE:**
-- Dead code / unused variables
-- Stale comments contradicting code
-- Variables assigned but never read
-
-**JUDGMENT REQUIRED:**
-- Security (auth, XSS, injection)
-- Race conditions
-- Query strategy or N+1 fixes
-- LLM validation and fallback behavior
-- Design decisions
-- Performance rewrites and view-lookup changes
-- Enum completeness
-- Removing functionality
-- Anything changing user-visible behavior
-
-In Review mode, report both categories without editing.
-
-In Fix mode:
-
-1. Show the proposed files and behavioral effect of each fix.
-2. Apply mechanical candidates covered by the user's explicit fix request.
-3. Ask before every judgment-required fix or scope expansion.
-4. Run focused tests after each coherent group of fixes.
-5. Re-run the relevant review checks and report remaining findings.
-
-Do not treat issue severity as edit authorization.
-
-### Step 5 — Test coverage audit
-Map changed code paths against existing tests:
-
-```
-Code Path                          Coverage
-────────────────────────────────── ────────
-handleSubmit → success             ✅ unit
-handleSubmit → validation error    ✅ unit
-handleSubmit → network error       ⚠️ GAP
-onMounted → fetch data             ✅ e2e
-onMounted → auth redirect          ⚠️ GAP
-```
-
-Flag paths marked GAP that are high-risk (auth, payments, data mutation).
-
-## Output format
+For maintenance work, the user may explicitly approve standards-only review.
+Record that exception; when the spec axis did not run and standards has no
+blocker, replace `INCOMPLETE` with `READY — standards-only exception`.
 
 ```markdown
-## Review Sweep: [branch name]
+# Review Sweep: <target>
 
-### Scope Check
-[CLEAN / DRIFT DETECTED / REQUIREMENTS MISSING]
+Fixed point: <commit>
+Mode: <WIP / branch>
+Isolation: <parallel / reduced sequential fallback>
 
-### Pre-Landing Review: N issues (X critical, Y informational)
+<complete Spec Review report>
 
-**FINDINGS:**
-- [file:line] Problem → recommended fix
+<complete Standards Review report>
 
-**FIXED (fix mode only):**
-- [file:line] Problem → verified fix
-
-**NEEDS INPUT:**
-- [file:line] Problem description
-  Recommended fix: suggested fix
-
-### Test Coverage
-[coverage table]
-
-### Verdict
-[READY / NEEDS WORK — with summary of blocking items]
+## Overall Verdict
+<READY / NEEDS WORK / INCOMPLETE / READY — standards-only exception>
+<blocking summary or exception rationale>
 ```
 
-## Suppressions — DO NOT flag
-
-- Redundancy that aids readability
-- "Add a comment explaining this constant" — constants change, comments rot
-- Consistency-only changes with no functional impact
-- Anything already addressed in the diff being reviewed
-- devDependencies additions (don't affect production bundle)
-- Dynamic `import()` calls (code splitting is good)
-- Small utility additions (<5KB gzipped)
-
-## Notes
-- Only flag items that actually apply to the diff — no generic advice
-- Default to a read-only report unless fix mode was explicitly requested
-- If a category has no issues, skip it entirely
-- Be specific: include file paths and line numbers for every item
-- Be terse: one line per problem, one line per fix. No preamble.
+After `NEEDS WORK`, return findings to the implementation/TDD loop. A later
+review must freeze the same fixed point again so corrections remain in scope.

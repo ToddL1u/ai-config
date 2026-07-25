@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Sweep"
+  short_description: "Run independent spec and standards reviews"
+  default_prompt: "Use $review-sweep to review this change through isolated spec and standards axes."
