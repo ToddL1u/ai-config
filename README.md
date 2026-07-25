@@ -7,10 +7,14 @@ custom skill has one canonical implementation and is installed for both agents.
 
 ```text
 AGENTS.md                  Shared persistent instructions
+SKILL_USAGE.md             Scenarios and prompt examples for every local skill
 skills/<name>/             Canonical universal skills
 scripts/setup.sh           Non-destructive home-directory installer
 scripts/check.sh           Repository integrity and portability checks
 ```
+
+See [SKILL_USAGE.md](SKILL_USAGE.md) when you are unsure which skill to invoke
+or want a copyable prompt example.
 
 The `skills/` directory is the only skill catalog and source of truth. Skills
 describe capabilities rather than exact vendor tool names and must either work
@@ -50,7 +54,7 @@ read, moved, or modified.
 ./scripts/check.sh
 ```
 
-The check validates skill frontmatter, unique names, the expected 36-skill
+The check validates skill frontmatter, unique names, the expected 37-skill
 catalog, hardcoded user paths, agent-specific tool names, and agent-specific
 mutable-state writes.
 
