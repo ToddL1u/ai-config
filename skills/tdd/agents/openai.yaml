@@ -1,0 +1,4 @@
+interface:
+  display_name: "TDD"
+  short_description: "Build behavior through red-green-cleanup cycles"
+  default_prompt: "Use $tdd to implement this behavior test-first at the approved seam."

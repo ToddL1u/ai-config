@@ -1,52 +1,50 @@
 ---
 name: test-impact
-description: "Generates a pre-coding test plan — identifies what tests exist, what will break, and what new tests are needed. Use before writing any code. Triggers on \"test impact\", \"what tests do I need\", \"what will break\", \"test plan\"."
+description: Discover existing coverage and propose stable public testing seams before implementation. Use for non-trivial raw requests, explicit test-impact or test-plan requests, or when an approved spec or ticket names a test seam that is missing, stale, or contradicted by repository evidence.
 ---
 
-# Test Impact — Pre-Coding Test Plan
+# Test Impact
 
-Analyze a planned change and produce a structured test plan before writing any code.
+Produce a pre-coding testing handoff. Discover and propose testing seams; do
+not write tests or implementation.
 
 ## Workflow
 
-1. **Get the planned change**: Ask what they plan to change, or use context
-   from a prior `understand-feature` run in the conversation.
+1. Read the planned behavior, repository instructions, domain documentation,
+   relevant code, and any approved spec or ticket.
+2. Identify the public interfaces through which the behavior can be observed.
+3. Search using repository conventions for existing unit, integration,
+   contract, and end-to-end tests around those interfaces.
+4. Read the relevant tests and record their scenarios, assertions, style,
+   fixtures, and external boundaries.
+5. Prefer the highest stable existing seam that proves the behavior. Propose a
+   new seam only when no existing public interface can provide useful proof.
+6. When checking an approved seam, report whether it is valid, stale, missing,
+   or contradicted. Do not silently replace it.
 
-2. **Identify files that will be touched**: Based on the change description, list all source files likely to be modified or created.
+Return:
 
-3. **Search for existing tests**: For each identified source file, search for matching test files:
-   - `*.spec.ts`, `*.test.ts` (unit tests)
-   - `*.cy.ts`, `*.cy.js` (Cypress e2e)
-   - `test_*.py`, `*_test.py` (Python)
-   - Check `__tests__/` directories and co-located test files
+```md
+## Test Impact: {change}
 
-4. **Read existing tests**: For each found test file, read it and note:
-   - What scenarios are covered (happy path, edge cases, error states)
-   - What assertions exist
-   - Whether tests are integration or unit style
+### Proposed seams
+- {public seam} — {behavior proved and why this is the highest useful seam}
 
-5. **Produce the test impact report** with these sections:
+### Existing coverage
+- {test path} — {covered scenarios and style}
 
-```markdown
-## Test Impact Report: [change description]
+### Expected impact
+- {test likely to change or fail} — {reason}
 
-### Existing tests that will break
-- `path/to/test.spec.ts` — [why it will break: changed function signature, removed prop, etc.]
+### New or extended cases
+- {seam} — {specific behavior, boundary, and failure cases}
 
-### New unit tests needed
-- [composable/util/store action] — [what to assert]
+### External boundaries
+- {real dependency or justified mock boundary}
 
-### New e2e tests needed
-- [user flow] — [what to verify]
-
-### Existing tests to extend
-- `path/to/test.spec.ts` — [new cases to add: new prop value, new state, etc.]
-
-### Risk notes
-- [snapshot fragility, flaky patterns like hardcoded waits, timing-dependent assertions, etc.]
+### Risks or contradictions
+- {missing infrastructure, stale approved seam, flakiness, or `None`}
 ```
 
-## Notes
-- Do NOT write any test code in this skill — only produce the plan.
-- If no tests exist for affected files, say so explicitly in the report.
-- Keep the report actionable: each item should be specific enough to write a test from.
+Use independent expected values and behavior-focused assertions. Do not propose
+tests of private methods or mocks of internal collaborators.

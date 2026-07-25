@@ -16,8 +16,16 @@ Deliver the requested feature with objective evidence that its acceptance criter
    independently verifiable implementation slice. For an approved ticket, use
    that ticket as the slice and proceed to implementation without decomposing
    it again.
-4. **Implement** — make only that slice and update relevant tests.
-5. **Verify** — run the narrowest useful checks, diagnose failures, and repair the cause.
+4. **Implement** — for executable behavior, use `tdd` at the approved seam:
+   one failing test, green, then bounded behavior-preserving cleanup. Do not
+   write another new failing test until the current one is green. For a
+   recorded TDD exception, make the smallest direct change and use
+   deterministic verification.
+5. **Verify** — run the focused test throughout each TDD cycle, the affected
+   test file or package suite and type-checking at slice boundaries, then the
+   repository's required broader checks at completion. If the full suite is
+   impractical, use the documented scoped alternative and report what was not
+   run.
 6. **Review** — inspect the diff for correctness, regression risk, missing tests, and scope drift. Use `review-sweep` for the final pass.
 7. **Record** — update `.ai/feature-progress.md` with evidence, decisions, failed approaches, blockers, and the next slice.
 8. **Decide** — repeat from step 3, or enter a terminal state.

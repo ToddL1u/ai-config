@@ -35,7 +35,13 @@ Use the repository's own commands and conventions. Do not assume a framework, pa
 ## Compose existing skills
 
 - Invoke `understand-feature` when entry points, dependencies, or the current behavior are unclear.
-- Invoke `test-impact` before coding when the change is non-trivial or test impact is unclear.
+- Invoke `test-impact` for a non-trivial raw request, or when an approved test
+  seam is missing, stale, or contradicted by repository evidence. Do not
+  rediscover a valid seam already approved by a spec or ticket.
+- Invoke `tdd` by default for executable behavior at an approved public seam.
+  Complete one red-green-cleanup cycle before writing the next failing test;
+  never batch multiple new red tests. When no meaningful executable seam
+  exists, record the TDD exception and use deterministic verification instead.
 - Invoke `review-sweep` after verification passes and before declaring success.
 - Use the current agent's plan or task tracker when available; keep `.ai/feature-progress.md` as the durable cross-session record.
 
@@ -47,6 +53,10 @@ Report:
 
 - terminal state: `SUCCESS`, `BLOCKED`, `STALLED`, or `EXHAUSTED`;
 - changes made;
+- testing strategy source: approved artifact, `test-impact`, or recorded TDD
+  exception;
+- red and green evidence for each TDD cycle, or deterministic exception
+  verification;
 - verification evidence;
 - unresolved risks or decisions;
 - next action, if not successful.
