@@ -24,6 +24,23 @@ Extract:
 - original title and a version with a leading `FE - ` removed;
 - description and acceptance criteria summarized into 3–5 bullets.
 
+When the ticket declares a source spec or parent specification:
+
+1. Preserve the ticket's complete acceptance criteria instead of reducing them
+   to a summary.
+2. Extract its stable ticket key, source spec reference and version, and
+   blocking relationships.
+3. Confirm that the child ticket is explicitly approved.
+4. Fetch the full source spec and relevant comments. Confirm that it is
+   approved and that its version matches the ticket.
+5. Fetch each blocker or native blocking relationship and confirm it is
+   complete.
+
+If the child ticket or source spec is missing, unapproved, version-mismatched,
+or internally contradictory, stop before changing Git state. Also stop when
+any blocker is incomplete. Report the exact mismatch or unresolved blocker; do
+not update the child or parent artifact.
+
 ### 2. Inspect repository safety
 
 Run `git status --short`. If the worktree is dirty, stop and offer to let the
@@ -80,12 +97,16 @@ git switch -c <branch-name>
 ### 6. Report
 
 Return the ticket key and title, new branch, detected base branch, acceptance
-criteria, and any useful ticket links. The repository must finish on the new
-branch with the same clean worktree state it had before the workflow.
+criteria, source spec reference and version when present, blocker status, and
+useful ticket links. The repository must finish on the new branch with the same
+clean worktree state it had before the workflow.
 
 ## Invariants
 
 - Fetch Jira before any branch switch or pull.
+- Validate a generated child ticket's source spec and blocker frontier before
+  any branch switch or pull.
+- Treat fetched child tickets and parent specs as read-only.
 - Never change branches with a dirty worktree without a separate user decision.
 - Never use destructive reset, force, or branch-overwrite operations.
 - Never claim the branch is ready until its base is verified and the new branch

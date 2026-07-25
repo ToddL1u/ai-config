@@ -9,9 +9,13 @@ Deliver the requested feature with objective evidence that its acceptance criter
 1. **Inspect** — read the request, repository guidance, relevant code, tests, and similar implementations.
 2. **Specify** — for a raw request, write acceptance criteria, scope,
    constraints, and verification commands. For an approved spec, import those
-   elements without rewriting them and proceed to planning. Surface material
-   ambiguity or contradiction before coding.
-3. **Plan** — choose the smallest independently verifiable implementation slice.
+   elements without rewriting them. For an approved ticket, import its
+   acceptance criteria and its parent spec's boundaries without rewriting
+   either. Surface material ambiguity or contradiction before coding.
+3. **Plan** — for a raw request or approved spec, choose the smallest
+   independently verifiable implementation slice. For an approved ticket, use
+   that ticket as the slice and proceed to implementation without decomposing
+   it again.
 4. **Implement** — make only that slice and update relevant tests.
 5. **Verify** — run the narrowest useful checks, diagnose failures, and repair the cause.
 6. **Review** — inspect the diff for correctness, regression risk, missing tests, and scope drift. Use `review-sweep` for the final pass.

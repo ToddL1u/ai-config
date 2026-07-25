@@ -15,13 +15,20 @@ Implement one feature to verified completion without requiring turn-by-turn prom
    - **Approved spec** — treat its goals, required behavior, non-goals,
      constraints, and testing decisions as authoritative. Record its stable
      reference and version. Do not re-specify or reopen confirmed decisions.
+   - **Approved ticket** — read its linked approved spec and verify the stated
+     version and blockers. Confirm that both artifacts explicitly record
+     approved status. Treat the ticket's behavior and acceptance criteria as
+     the active slice, and the spec's goals, non-goals, constraints, and testing
+     decisions as its boundary. Record both stable references. Do not re-specify
+     or split the ticket again.
 3. Read [references/feature-standards.md](references/feature-standards.md).
 4. Read [references/feature-loop.md](references/feature-loop.md) and follow it until a terminal state is reached.
 5. For work that will span multiple iterations or sessions, copy [assets/feature-progress.md](assets/feature-progress.md) to `.ai/feature-progress.md`. Reuse an existing file for the same feature; do not erase useful history.
 
-If an approved spec is missing information required to implement safely, or it
-conflicts with the repository, enter `BLOCKED` and identify the exact
-contradiction. Do not silently rewrite the spec.
+If an approved spec or ticket is missing information required to implement
+safely, conflicts with the repository, or has an incomplete blocker, enter
+`BLOCKED` and identify the exact contradiction. Do not silently rewrite the
+artifact or expand the ticket.
 
 Use the repository's own commands and conventions. Do not assume a framework, package manager, branch name, or test command.
 
