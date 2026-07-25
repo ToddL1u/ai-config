@@ -1,0 +1,6 @@
+interface:
+  display_name: "Grill Me"
+  short_description: "Start an explicit decision-grilling session"
+  default_prompt: "Use $grill-me to challenge my plan before taking action."
+policy:
+  allow_implicit_invocation: false
