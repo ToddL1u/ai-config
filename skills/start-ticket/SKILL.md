@@ -1,67 +1,43 @@
 ---
 name: start-ticket
-description: Fetch a Jira ticket, verify the repository state, safely update the repository's default branch, and create a ticket branch. Use when the user asks to start work from a Jira URL or issue key, create a branch for a ticket, or run start-ticket.
+description: Safely create and switch to a categorized ticket branch from the repository's up-to-date default branch. Use when the user provides a ticket key and title and wants a ready development branch without fetching or validating Jira.
 ---
 
 # Start Ticket
 
-Fetch the ticket before changing Git state, then create a branch from an
-up-to-date default branch.
+Create a clean development branch from the repository's up-to-date default
+branch. Do not call Jira, Atlassian, or any other ticket service. Treat the
+ticket key and title supplied by the user as branch-naming input only.
 
 ## Workflow
 
-### 1. Validate inputs and capabilities
+### 1. Collect branch inputs
 
-1. Confirm the current directory is a Git worktree and record the current branch.
-2. Parse a Jira URL or issue key from the request. Ask for one only when absent.
-3. Verify an authenticated Jira or Atlassian capability is available.
-4. Fetch the issue before switching branches or pulling anything. If access
-   fails, stop without changing Git state.
-
-Extract:
-
-- issue key;
-- original title and a version with a leading `FE - ` removed;
-- description and acceptance criteria summarized into 3–5 bullets.
-
-When the ticket declares a source spec or parent specification:
-
-1. Preserve the ticket's complete acceptance criteria instead of reducing them
-   to a summary.
-2. Extract its stable ticket key, source spec reference and version, and
-   blocking relationships.
-3. Confirm that the child ticket is explicitly approved.
-4. Fetch the full source spec and relevant comments. Confirm that it is
-   approved and that its version matches the ticket.
-5. Fetch each blocker or native blocking relationship and confirm it is
-   complete.
-
-If the child ticket or source spec is missing, unapproved, version-mismatched,
-or internally contradictory, stop before changing Git state. Also stop when
-any blocker is incomplete. Report the exact mismatch or unresolved blocker; do
-not update the child or parent artifact.
+1. Confirm the current directory is a Git worktree and record the current
+   branch.
+2. Read the ticket key and title from the request. Ask for either value only
+   when it is absent. Do not fetch the ticket to fill either value.
+3. Ask for a prefix from `feat`, `fix`, `hotfix`, `chore`, or `refactor` unless
+   the user already supplied one.
+4. Build `{prefix}/{ISSUE-KEY}-{kebab-title}`. Normalize
+   `SPRTPLTFRM-12345` to `SPF-12345`, remove unsafe characters and repeated
+   hyphens, and keep the name reasonably short.
 
 ### 2. Inspect repository safety
 
-Run `git status --short`. If the worktree is dirty, stop and offer to let the
-user commit or stash it; do not stash automatically.
+1. Run `git status --short`. If the worktree is dirty, stop and offer to let
+   the user commit or stash it; do not stash automatically.
+2. Detect the default branch from `refs/remotes/origin/HEAD`. If that reference
+   is missing, inspect remote metadata and local `main`/`master` branches. Ask
+   when the result is ambiguous; do not assume `master`.
+3. Check both local and remote branch names. If the generated branch exists,
+   stop and offer to switch to it or choose another name; never overwrite it.
 
-Detect the default branch from `refs/remotes/origin/HEAD`. If that reference is
-missing, inspect remote metadata and local `main`/`master` branches. Ask when
-the result is ambiguous. Do not assume `master`.
+### 3. Update the base branch safely
 
-### 3. Confirm the branch operation
-
-Show:
-
-- current branch;
-- detected default branch;
-- ticket key and cleaned title.
-
-If not already on the default branch, ask before switching. Stop if the user
+Show the current branch, detected default branch, and proposed new branch. If
+not already on the default branch, ask before switching and stop if the user
 declines.
-
-### 4. Update the default branch safely
 
 Fetch the default branch. Switch to the local branch when it exists; otherwise
 create it as a tracking branch from `origin/<default-branch>`. Update an
@@ -76,37 +52,24 @@ git merge --ff-only origin/<default-branch>
 If the branch has diverged, stop without rebasing or resetting. Report the
 state and leave existing commits intact.
 
-### 5. Choose and validate the new branch
+### 4. Create the branch
 
-Ask for a prefix from `feat`, `fix`, `hotfix`, `chore`, or `refactor` unless the
-user already supplied one.
-
-Build `{prefix}/{ISSUE-KEY}-{kebab-title}`. For company convention, normalize
-`SPRTPLTFRM-12345` to `SPF-12345`. Remove unsafe characters and repeated
-hyphens, and keep the name reasonably short.
-
-Check both local and remote branch names before creation. If the name exists,
-stop and offer to switch to it or choose another name; never overwrite it.
-
-Create the branch with:
+Create and switch to the validated branch:
 
 ```bash
 git switch -c <branch-name>
 ```
 
-### 6. Report
+### 5. Report
 
-Return the ticket key and title, new branch, detected base branch, acceptance
-criteria, source spec reference and version when present, blocker status, and
-useful ticket links. The repository must finish on the new branch with the same
-clean worktree state it had before the workflow.
+Return the user-provided ticket key and title, new branch, detected base
+branch, and final worktree status. The repository must finish on the new
+branch with the same clean worktree state it had before the workflow.
 
 ## Invariants
 
-- Fetch Jira before any branch switch or pull.
-- Validate a generated child ticket's source spec and blocker frontier before
-  any branch switch or pull.
-- Treat fetched child tickets and parent specs as read-only.
+- Never fetch, read, validate, or update Jira tickets, specifications, or
+  blockers.
 - Never change branches with a dirty worktree without a separate user decision.
 - Never use destructive reset, force, or branch-overwrite operations.
 - Never claim the branch is ready until its base is verified and the new branch
