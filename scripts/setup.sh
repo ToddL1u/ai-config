@@ -140,9 +140,29 @@ manage_legacy_claude_command() {
   CHANGE_COUNT=$((CHANGE_COUNT + 1))
 }
 
+manage_obsolete_skill() {
+  local obsolete_path="$1"
+
+  if [[ ! -e "$obsolete_path" && ! -L "$obsolete_path" ]]; then
+    return
+  fi
+
+  if [[ "$MODE" == "--check" ]]; then
+    echo "obsolete skill to back up: $obsolete_path"
+    CHANGE_COUNT=$((CHANGE_COUNT + 1))
+    return
+  fi
+
+  backup_one "$obsolete_path"
+  CHANGE_COUNT=$((CHANGE_COUNT + 1))
+}
+
 manage_copy "$REPO_ROOT/AGENTS.md" "$HOME/.codex/AGENTS.md"
 manage_copy "$REPO_ROOT/AGENTS.md" "$HOME/.claude/CLAUDE.md"
 manage_legacy_claude_command
+manage_obsolete_skill "$HOME/.agents/skills/team"
+manage_obsolete_skill "$HOME/.claude/skills/team"
+manage_obsolete_skill "$HOME/.codex/skills/team"
 
 for skill_path in "$REPO_ROOT"/skills/*; do
   [[ -d "$skill_path" ]] || continue

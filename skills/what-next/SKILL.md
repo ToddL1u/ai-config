@@ -45,9 +45,9 @@ Prefer these routes:
 - Save a lightweight resumable project snapshot → `checkpoint`.
 - Transfer dense context into a fresh session → `handover`.
 
-Do not recommend internal review axes such as `spec-review` or
-`standards-review`; `review-sweep` owns them. Do not route to unrelated personal
-utilities. Do not use `team` as a general workflow router.
+Do not recommend internal coordination or review skills such as
+`parallel-work`, `spec-review`, or `standards-review`; their controlling
+workflows own them. Do not route to unrelated personal utilities.
 
 ## Main flow
 

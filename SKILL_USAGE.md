@@ -211,13 +211,15 @@ Read-only investigations enter at `understand-feature`.
 
 ## Coordinate and preserve context
 
-### `team`
+### `parallel-work`
 
-- **Use when:** You explicitly want bounded subtasks delegated across multiple
-  agents or independent work performed in parallel.
-- **Prompt:** `Use team. Have independent agents inspect the frontend and API impact of this proposal, then combine their findings.`
-- **Note:** Do not use it as the default feature workflow. Phase 7 will simplify
-  it to coordination only.
+- **Use when:** A controlling workflow or request contains at least two
+  independent, bounded tasks whose parallel execution provides meaningful
+  benefit.
+- **Prompt:** `Use parallel agents to inspect the frontend, API, and test impact independently, then combine the evidence.`
+- **Note:** Internal coordination discipline. You normally describe the desired
+  parallel work instead of invoking the skill by name. It never chooses the
+  surrounding workflow.
 
 ### `checkpoint`
 

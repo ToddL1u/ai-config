@@ -53,6 +53,9 @@ Use the repository's own commands and conventions. Do not assume a framework, pa
 - Invoke `review-sweep` in WIP mode after verification passes and before
   declaring success. Pass the recorded fixed point and authoritative sources so
   the review includes committed, staged, unstaged, and untracked work.
+- Invoke `parallel-work` only when at least two bounded subtasks are independent
+  and parallelism provides meaningful benefit. Keep this skill's lifecycle,
+  integration, and final verification with the parent agent.
 - Use the current agent's plan or task tracker when available; keep `.ai/feature-progress.md` as the durable cross-session record.
 
 Do not pause merely to ask whether to proceed to the next loop step. Continue while the next action is safe, in scope, and objectively verifiable. Stop at the terminal conditions in the loop.
