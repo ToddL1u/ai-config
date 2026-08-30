@@ -54,7 +54,7 @@ read, moved, or modified.
 ./scripts/check.sh
 ```
 
-The check validates skill frontmatter, unique names, the expected 37-skill
+The check validates skill frontmatter, unique names, the expected 38-skill
 catalog, hardcoded user paths, agent-specific tool names, and agent-specific
 mutable-state writes.
 
@@ -70,16 +70,29 @@ mutable-state writes.
 4. Run `./scripts/check.sh`, then `./scripts/setup.sh --apply` to install the
    new skill for both agents.
 
-## Runtime state
+## Private per-worktree AI workflow
 
-Project-local agent state uses `.ai/`:
+Use a repository-local `.ai/` directory only for personal AI workflow notes,
+including `.ai/feature-board.md` and `.ai/current-card.md`. It is not for
+shared product specifications.
 
 ```text
 .ai/checkpoints/
 .ai/journal/
 .ai/handover.md
+.ai/feature-board.md
+.ai/current-card.md
 ```
 
 New personal skincare data defaults to `~/.ai/skincare-data/`. Relevant skills
 can read older Claude or Codex paths for compatibility but write only to neutral
-locations. Add `.ai/` to project ignore rules unless the state should be shared.
+locations.
+
+Do not modify or commit the shared `.gitignore`. Apply the following once per
+worktree to ignore private `.ai/` notes locally:
+
+```bash
+git rev-parse --git-path info/exclude
+# Add .ai/ to the returned local exclude file.
+git check-ignore -v .ai/feature-board.md
+```

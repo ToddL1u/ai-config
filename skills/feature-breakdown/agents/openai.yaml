@@ -1,0 +1,4 @@
+interface:
+  display_name: "Feature Breakdown"
+  short_description: "Split large features into executable vertical slices"
+  default_prompt: "Use $feature-breakdown to map this large feature into private, dependency-aware vertical slices."
