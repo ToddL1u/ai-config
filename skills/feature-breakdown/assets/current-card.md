@@ -29,6 +29,13 @@
 
 -
 
+## Source references
+
+| Source | Stable reference | Governs | Access status |
+| --- | --- | --- | --- |
+| PRD |  | Behavior and copy |  |
+| Figma |  | Layout, visual states, and responsive behavior |  |
+
 ## Dependencies, assumptions, and questions
 
 - Dependencies:

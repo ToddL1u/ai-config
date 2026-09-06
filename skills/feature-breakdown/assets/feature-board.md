@@ -7,6 +7,13 @@
 - Explicit exclusions:
 - Source context:
 
+### Source references
+
+| Source | Stable reference | Governs | Access status |
+| --- | --- | --- | --- |
+| PRD |  | Behavior and copy |  |
+| Figma |  | Layout, visual states, and responsive behavior |  |
+
 ## Feature map
 
 ```text
@@ -26,6 +33,7 @@ C1 -> C2
   - [ ]
 - Verification:
 - Dependencies: None
+- Source references:
 - Assumptions:
 - Open questions:
 

@@ -5,35 +5,10 @@ description: Start an explicit grilling session that stress-tests a plan against
 
 # Grill With Docs
 
-Run a repository-aware feature intake, then use `grilling` with the
-`domain-modeling` discipline only for material unresolved decisions.
+Run `grilling` with the `domain-modeling` discipline in documentation mode.
 
-## Feature Intake
-
-Before asking any question, inspect the repository instructions, relevant PRD
-and Figma sources, existing behavior, code, tests, glossary, context map, and
-architecture decision records. Investigate discoverable facts instead of asking
-the user.
-
-Return a concise **Feature Start Brief** containing:
-
-- user problem, user-visible outcome, and explicit non-goals;
-- stable source references and unavailable-source blockers;
-- confirmed facts, safe assumptions, and dependencies;
-- material decisions requiring user confirmation;
-- the smallest independently verifiable vertical slice;
-- acceptance and verification criteria;
-- recommended next route: `dev-flow` for one resolved slice, or
-  `feature-breakdown` for a large or dependent feature.
-
-Treat a decision as material only when it could change user behavior, scope,
-authorization, data interpretation, an external contract, acceptance criteria,
-or testing seams.
-
-If no material decision remains, return the Feature Start Brief and route
-recommendation. Do not start `grilling` or invoke the downstream workflow.
-
-## Decision Clarification
+Before asking about facts, inspect the repository, its instructions, its code,
+and any existing glossary, context map, or architecture decision records.
 
 During the session:
 

@@ -24,6 +24,10 @@ Prefer these routes:
   `grill-with-docs`.
 - Terminology, domain boundaries, glossary, or ADR problem specifically →
   `domain-modeling`.
+- Resolved large feature with dependent vertical slices, incomplete PRD or Figma
+  decisions, or private worktree planning needs → `feature-breakdown`.
+- Ready feature card that another agent will implement from PRD and design
+  sources → `executor-handoff`.
 - Resolved feature small enough for one implementation flow → `dev-flow`.
 - Resolved multi-session feature without an approved spec → `to-spec`.
 - Approved multi-slice spec → `to-tickets`.
@@ -56,16 +60,19 @@ Use this as orientation, not an automatic pipeline:
 ```text
 unclear repository change
   → grill-with-docs
-  → to-spec                    when the build spans sessions
-  → to-tickets                 when the spec needs multiple slices
+  → feature-breakdown          when private vertical-slice planning is needed
+  → executor-handoff           when another agent will implement a Ready card
+  → to-spec                    when a shared approved specification is needed
+  → to-tickets                 when approved tracker tickets are needed
   → start-ticket               when starting an approved Jira ticket
   → dev-flow
   → ship
 ```
 
 For a small resolved change, go directly to `dev-flow`. It already composes TDD
-and final review. For a hard bug, enter through `debug`; for understanding only,
-enter through `understand-feature`.
+and final review. For a large private feature, use `feature-breakdown` after
+material decisions are resolved. For a hard bug, enter through `debug`; for
+understanding only, enter through `understand-feature`.
 
 ## Respond
 

@@ -34,8 +34,10 @@ skill directly.
 ```text
 unclear repository change
   → grill-with-docs
-  → to-spec                    when work spans sessions
-  → to-tickets                 when the spec needs multiple slices
+  → feature-breakdown          when the feature has dependent vertical slices
+  → executor-handoff           when another agent will implement a Ready card
+  → to-spec                    when a shared approved specification is needed
+  → to-tickets                 when approved tracker tickets are needed
   → start-ticket               when starting an approved Jira ticket
   → dev-flow
   → commit-chunk               when completed changes are uncommitted
@@ -105,6 +107,20 @@ Read-only investigations enter at `understand-feature`.
 - **Use when:** One approved specification needs dependency-aware,
   independently verifiable implementation tickets.
 - **Prompt:** `Use to-tickets. Split docs/reminder-spec.md into tracer-bullet Jira tickets.`
+
+### `feature-breakdown`
+
+- **Use when:** A large feature has incomplete PRD or Figma decisions, multiple
+  user-observable slices, or dependencies that make one `dev-flow` too broad.
+- **Prompt:** `Use feature-breakdown. Map this Figma and PRD into private, dependency-aware vertical slices.`
+- **Note:** It creates private `.ai/feature-board.md` and `.ai/current-card.md`; it does not implement or create tracker tickets.
+
+### `executor-handoff`
+
+- **Use when:** One `feature-breakdown` card is Ready and another agent should
+  implement it from the original PRD and Figma sources.
+- **Prompt:** `Use executor-handoff. Create a handoff for C2 for Claude Code using the linked PRD and Figma frame.`
+- **Note:** It creates a source-pinned private brief and stops before implementation.
 
 ### `start-ticket`
 
@@ -306,6 +322,8 @@ Read-only investigations enter at `understand-feature`.
 
 - Unsure where to begin → `what-next`
 - Unclear repository idea → `grill-with-docs`
+- Large private feature with dependent slices → `feature-breakdown`
+- Ready card for another agent → `executor-handoff`
 - Resolved multi-session work → `to-spec`
 - Approved multi-slice spec → `to-tickets`
 - Approved Jira ticket, no branch → `start-ticket`

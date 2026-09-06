@@ -3,7 +3,7 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-EXPECTED_SKILL_COUNT=38
+EXPECTED_SKILL_COUNT=39
 ERROR_COUNT=0
 SKILL_COUNT=0
 SEEN_NAMES="|"
