@@ -5,7 +5,7 @@
 - Card: C1 — [title]
 - Status: Ready
 - Parent Epic:
-- Board: `.ai/feature-board.md`
+- Board: `.ai/boards/<feature>.md`
 
 ## Outcome
 
@@ -28,6 +28,13 @@
 ## Verification
 
 -
+
+## Source references
+
+| Source | Stable reference | Governs | Access status |
+| --- | --- | --- | --- |
+| PRD |  | Behavior and copy |  |
+| Figma |  | Layout, visual states, and responsive behavior |  |
 
 ## Dependencies, assumptions, and questions
 

@@ -74,7 +74,9 @@ of it, and say so rather than presenting it as current.
 ## Break down the feature
 
 1. Read repository instructions and the available PRD, Figma, domain docs, and
-   relevant code. Treat confirmed decisions as fixed.
+   relevant code. Record stable source references available for this run,
+   including the exact Figma frame or node and PRD section when provided. Treat
+   confirmed decisions as fixed.
 2. State the Epic as one user or business outcome, including explicit
    exclusions.
 3. Record incomplete PRD or Figma details as assumptions and open questions.
@@ -92,6 +94,8 @@ of it, and say so rather than presenting it as current.
 7. Select only one `Ready` card. Copy its context into `.ai/current-card.md`, and update the board's
    `Last verified` line.
    The next implementation workflow is `dev-flow`; do not start it yourself.
+   When the user needs another agent to implement the card, `executor-handoff`
+   may create a source-pinned implementation brief first.
 
 Use `Proposed`, `Ready`, `In progress`, `Blocked`, and `Done` only as local
 statuses. Update the board after the user confirms a changed plan or after a
@@ -111,6 +115,8 @@ Each card must contain:
   permission states when they are part of the path.
 - **Verification:** how the criteria will be demonstrated.
 - **Dependencies:** only cards or external decisions that truly block start.
+- **Source references:** the PRD sections and Figma frames or nodes that govern
+  this card, plus an explicit unavailable-source blocker when access is needed.
 - **Assumptions and open questions:** links to the board entries; mark the card
   `Blocked` when either one makes acceptance unknowable.
 
@@ -140,5 +146,5 @@ it as an open question instead of guessing.
 
 Report the Epic, cards in topological order, the immediately ready card, graph
 validation, assumptions, and questions requiring `grilling`. End after the
-breakdown. Do not invoke `dev-flow`, `to-tickets`, or any implementation
+breakdown. Do not invoke `executor-handoff`, `dev-flow`, `to-tickets`, or any implementation
 workflow.

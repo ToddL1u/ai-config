@@ -1,0 +1,4 @@
+interface:
+  display_name: "Executor Handoff"
+  short_description: "Create a source-pinned handoff for one Ready feature card"
+  default_prompt: "Use $executor-handoff to prepare the Ready card for another agent to implement from its PRD and design sources."

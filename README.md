@@ -54,7 +54,7 @@ read, moved, or modified.
 ./scripts/check.sh
 ```
 
-The check validates skill frontmatter, unique names, the expected 38-skill
+The check validates skill frontmatter, unique names, the expected 39-skill
 catalog, hardcoded user paths, agent-specific tool names, and agent-specific
 mutable-state writes.
 
@@ -73,14 +73,14 @@ mutable-state writes.
 ## Private per-worktree AI workflow
 
 Use a repository-local `.ai/` directory only for personal AI workflow notes,
-including `.ai/feature-board.md` and `.ai/current-card.md`. It is not for
+including `.ai/boards/<feature>.md` and `.ai/current-card.md`. It is not for
 shared product specifications.
 
 ```text
 .ai/checkpoints/
 .ai/journal/
 .ai/handover.md
-.ai/feature-board.md
+.ai/boards/<feature>.md
 .ai/current-card.md
 ```
 
@@ -94,5 +94,5 @@ worktree to ignore private `.ai/` notes locally:
 ```bash
 git rev-parse --git-path info/exclude
 # Add .ai/ to the returned local exclude file.
-git check-ignore -v .ai/feature-board.md
+git check-ignore -v .ai/boards/
 ```
