@@ -1,6 +1,6 @@
 ---
 name: feature-breakdown
-description: Split one large product feature into a private, dependency-aware Epic and user-observable vertical-slice cards before implementation. Use when a feature is too large for one dev-flow, needs mock-first boundaries, or has incomplete PRD or Figma decisions; use also when changing a feature that already owns a board under .ai/boards/, to reconcile that board with the current code before planning the change. Use after grilling resolves material product choices and before dev-flow implements a card.
+description: Split one large product feature into a private, dependency-aware Epic and user-observable vertical-slice cards before implementation. Use when a feature is too large for one dev-flow, needs a local worktree progress board, needs mock-first boundaries, or has incomplete PRD or Figma decisions; use after grilling resolves material product choices and before dev-flow implements a card.
 ---
 
 # Feature Breakdown
@@ -11,65 +11,20 @@ commit work notes.
 
 ## Private workspace
 
-Boards are per feature, not per branch. A feature outlives the branches that
-change it, so one durable board per maintained feature is reused every time that
-feature is touched.
+Use one board for the current worktree:
 
-- `.ai/boards/<feature>.md` — Epic, card map, dependencies, assumptions, and
-  status for one feature. `<feature>` is a stable kebab-case slug naming the
-  product feature, never a ticket key or branch name.
+- `.ai/feature-board.md` — Epic, card map, dependencies, assumptions, and
+  status.
 - `.ai/current-card.md` — execution context for the one card about to enter
-  `dev-flow`. One per worktree, overwritten each time.
+  `dev-flow`.
 
-Take the feature slug from the invocation when given. Otherwise list
-`.ai/boards/` and ask which existing board this work belongs to, offering a new
-slug as one option. Never guess the slug from the branch name; a branch may
-touch a feature it is not named after.
-
-`.ai/` is expected to be ignored. Verify with `git check-ignore -q .ai/` and,
-only when that fails, add the exact line `.ai/` to the path reported by
-`git rev-parse --git-path info/exclude`. Do not edit the shared `.gitignore`.
-Never stage or commit `.ai/` files.
-
-## Choose create or sync
-
-Read `.ai/boards/<feature>.md` before anything else.
-
-**Create** when no board exists for the feature. Copy
-[assets/feature-board.md](assets/feature-board.md), then break the feature down
-as below.
-
-**Sync** when a board exists. The board is a claim about code that has since
-moved, so reconcile it before planning anything new:
-
-1. Compare its `Last verified` commit with `HEAD`. Nothing to reconcile when
-   they match.
-2. Check every path, component, and endpoint the board names still exists.
-   Correct what moved; mark what is gone as removed rather than deleting the
-   card's history.
-3. Correct any card status contradicted by the code or the test suite.
-4. Report what drifted before proposing new cards. A silently corrected board
-   teaches the user nothing about how far it had rotted.
-
-Then add cards for the new work, reopening an existing card when the change
-alters a behaviour that card already owns. Prefer reopening over adding: a
-changed pick flow belongs in the card that owns picking, not in a new card.
-
-Copy [assets/current-card.md](assets/current-card.md) only when it does not
-exist; preserve useful existing notes.
-
-## Keep a board honest
-
-Every board carries, in its Epic header:
-
-- `Feature:` the stable slug.
-- `Branch:` the branch the last update was made on.
-- `Last verified: <short SHA> (<YYYY-MM-DD>)` — set on every create and every
-  sync, and never left stale after editing the board.
-
-A board whose `Last verified` predates the feature's most recent commit is
-untrusted input. Re-verify it against the code before relying on a single line
-of it, and say so rather than presenting it as current.
+Before creating either file, run `git rev-parse --git-path info/exclude`. Add
+the exact line `.ai/` to that worktree's resulting exclude file when absent.
+Do not edit the shared `.gitignore`. Copy
+[assets/feature-board.md](assets/feature-board.md) and
+[assets/current-card.md](assets/current-card.md) only when the corresponding
+private file does not exist; preserve useful existing notes. Never stage or
+commit `.ai/` files.
 
 ## Break down the feature
 
@@ -89,13 +44,12 @@ of it, and say so rather than presenting it as current.
    card that fits one fresh `dev-flow` run and can land green.
 6. Draw dependencies as `C1 -> C2` and check that the graph is acyclic, at
    least one card is `Ready`, and blockers precede dependants.
-7. Select only one `Ready` card. Copy its context into `.ai/current-card.md`, and update the board's
-   `Last verified` line.
+7. Select only one `Ready` card. Copy its context into `.ai/current-card.md`.
    The next implementation workflow is `dev-flow`; do not start it yourself.
 
 Use `Proposed`, `Ready`, `In progress`, `Blocked`, and `Done` only as local
 statuses. Update the board after the user confirms a changed plan or after a
-card's status is known, refreshing `Last verified` each time. Keep all skill-generated text, templates, and metadata
+card's status is known. Keep all skill-generated text, templates, and metadata
 in English.
 
 ## Card quality bar

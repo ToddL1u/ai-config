@@ -2,6 +2,9 @@
 
 ## Epic
 
+- Feature:
+- Branch:
+- Last verified:
 - Outcome:
 - In scope:
 - Explicit exclusions:
