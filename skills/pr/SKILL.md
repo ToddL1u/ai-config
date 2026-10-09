@@ -31,7 +31,9 @@ does not retain a reliable boundary for the previous push.
    HEAD or a protected branch unless the user explicitly explains the workflow.
 2. Resolve the base in this order:
    - `--base=<branch>` supplied by the user;
-   - existing PR base from `gh pr view --json baseRefName`;
+   - existing **open** PR base from `gh pr view --json baseRefName,state,url`.
+     Always request `state`. A `MERGED` or `CLOSED` PR does not define the base
+     and does not mean a PR exists — treat it as absent and fall through;
    - repository default from `refs/remotes/origin/HEAD`;
    - ask the user when the base remains ambiguous.
 3. Verify `origin/<base>` exists after a read-only `git fetch origin <base>`.
@@ -99,8 +101,13 @@ In Create mode:
 1. Show the proposed title, head, base, and final body.
 2. Treat the user's explicit request to create the PR as publication authority;
    ask only when the title, base, or scope is unresolved.
-3. Run `gh pr create --base <base> --head <head> --title <title> --body <body>`.
-4. Return the PR URL. If creation fails, report the error and retain the body in
+3. Check for a conflicting PR with `gh pr view --json state,url`. If an **open**
+   PR already exists for this head and base, report its URL and stop; do not edit
+   it and do not silently retarget. `MERGED` and `CLOSED` PRs never block creation.
+4. Run `gh pr create --base <base> --head <head> --title <title> --body <body>`.
+   Run it. Never predict that creation will fail and substitute another action —
+   let the command produce the real error.
+5. Return the PR URL. If creation fails, report the error and retain the body in
    the response. Do not silently switch to another base or claim success.
 
 ## Invariants
@@ -109,3 +116,5 @@ In Create mode:
 - Never push, force-push, or modify source files as part of this skill.
 - Never fabricate tests, screenshots, ticket links, or checklist completion.
 - Keep company-specific conventions subordinate to the repository's template.
+- Never edit, retitle, close, or reopen an existing PR. This skill only drafts,
+  copies, and creates.
