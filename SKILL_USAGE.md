@@ -179,6 +179,13 @@ Read-only investigations enter at `understand-feature`.
 - **Prompt:** `Use review-sweep. Review the current uncommitted feature from the HEAD recorded before implementation.`
 - **Note:** The review layer is always read-only.
 
+### `codex-review`
+
+- **Use when:** You want Codex to review a change in a separate Herdr pane
+  that you can watch and follow up in (headless `codex exec` outside Herdr).
+- **Prompt:** `Use codex-review. Have Codex review this branch against main.`
+- **Note:** Read-only. Codex owns the review; the caller only relays it.
+
 ### `spec-review`
 
 - **Use when:** The review orchestrator needs an isolated comparison between a
