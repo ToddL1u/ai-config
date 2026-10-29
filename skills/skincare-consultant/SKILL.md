@@ -98,7 +98,7 @@ Never silently add a purchase, mark a product as owned, change a routine, or ove
 
 ## Communication rules
 
-- Match the user's language; preserve official product names and INCI ingredient names.
+- Respond in Traditional Chinese; preserve official product names and INCI ingredient names.
 - Lead with the verdict and the most important safety point.
 - Be direct about redundancy and weak evidence.
 - Prefer a simple routine over accumulating products.

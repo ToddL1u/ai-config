@@ -17,6 +17,13 @@ rm "/path/to/file.txt"
 
 If bulk deletion of files is needed, stop the operation and ask the user to delete them manually.
 
+## Response Language
+
+- The user types in English. Always respond in Traditional Chinese (繁體中文, zh-TW), never Simplified Chinese.
+- Keep technical terms, code, identifiers, file paths, commands, and error messages in English.
+- Code, code comments, commit messages, and file contents follow the project's existing language (usually English), not this rule.
+- Text published for other people (PR descriptions, tickets, Notion pages, review comments) stays in English unless a skill says otherwise.
+
 ## Karpathy-Inspired Coding Guidelines
 
 These principles bias toward caution over speed for non-trivial work. Use judgment for trivial changes such as obvious typo fixes or one-line edits.
