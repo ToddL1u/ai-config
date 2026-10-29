@@ -134,6 +134,16 @@ Read-only investigations enter at `understand-feature`.
   dependencies, or risks before editing.
 - **Prompt:** `Use understand-feature. Trace how checkout completion triggers customer notifications.`
 
+### `graphify`
+
+- **Use when:** You want a whole-repository or mixed-folder map (god nodes,
+  surprising connections), or repeated structure questions answered from a
+  saved graph instead of re-reading files.
+- **Prompt:** `Use graphify on this repo, then tell me how the cart store connects to the payment API.`
+- **Note:** Needs the `graphify` CLI (`uv tool install graphifyy`). Defaults to
+  code-only extraction, which needs no LLM; asks before a full extraction. Pays
+  off on large repositories, not small ones.
+
 ## Build, debug, and test
 
 ### `dev-flow`
@@ -337,6 +347,7 @@ Read-only investigations enter at `understand-feature`.
 - Ready to implement → `dev-flow`
 - Hard unreproduced bug → `debug`
 - Need to understand only → `understand-feature`
+- Need a whole-repository map → `graphify`
 - Need browser evidence → `qa-browser`
 - Implementation needs review → `review-sweep`
 - Completed changes need commits → `commit-chunk`
