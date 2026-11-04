@@ -76,9 +76,24 @@ if rg -ni 'write[^\n]*(\.claude|\.codex|\.Codex)/(checkpoints|journal)|write[^\n
   fail "a skill still writes mutable state to an agent-specific directory"
 fi
 
+MOD_COUNT=0
+for mod_path in "$REPO_ROOT"/mods/*; do
+  [[ -d "$mod_path" ]] || continue
+  mod_name="$(basename "$mod_path")"
+  MOD_COUNT=$((MOD_COUNT + 1))
+
+  if [[ ! -f "$mod_path/hooks/hooks.json" ]]; then
+    fail "missing hooks/hooks.json: $mod_path"
+  fi
+  manifest_name="$(jq -r '.name // empty' "$mod_path/.claude-plugin/plugin.json" 2>/dev/null || true)"
+  if [[ "$manifest_name" != "$mod_name" ]]; then
+    fail "mod manifest name '$manifest_name' does not match '$mod_name'"
+  fi
+done
+
 if (( ERROR_COUNT > 0 )); then
   echo "repository check failed: $ERROR_COUNT error(s)" >&2
   exit 1
 fi
 
-echo "repository check passed: $SKILL_COUNT universal skills"
+echo "repository check passed: $SKILL_COUNT universal skills, $MOD_COUNT Claude Code mods"

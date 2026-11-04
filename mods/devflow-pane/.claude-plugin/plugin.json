@@ -1,0 +1,6 @@
+{
+  "name": "devflow-pane",
+  "version": "0.1.0",
+  "description": "Pane beside the chat that shows the repo's dev-flow .ai/feature-progress.md: state, acceptance criteria, next step, live",
+  "types": "./types/index.d.ts"
+}

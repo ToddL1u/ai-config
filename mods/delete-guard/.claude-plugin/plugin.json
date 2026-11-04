@@ -1,0 +1,5 @@
+{
+  "name": "delete-guard",
+  "version": "0.1.0",
+  "description": "Blocks bulk deletions (rm -r, globs, several paths, find -delete, xargs rm, git clean) in Bash tool calls"
+}

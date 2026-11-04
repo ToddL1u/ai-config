@@ -9,6 +9,7 @@ custom skill has one canonical implementation and is installed for both agents.
 AGENTS.md                  Shared persistent instructions
 SKILL_USAGE.md             Scenarios and prompt examples for every local skill
 skills/<name>/             Canonical universal skills
+mods/<name>/               Claude Code mods (hooks modules)
 scripts/setup.sh           Non-destructive home-directory installer
 scripts/check.sh           Repository integrity and portability checks
 ```
@@ -38,6 +39,11 @@ The installer links every skill to:
 
 - `~/.claude/skills/<name>` for Claude Code.
 - `~/.agents/skills/<name>` for Codex, its supported user-skill location.
+
+Every mod is linked to `~/.claude/mods/<name>`. Claude Code loads a mod only
+from a folder listed in `CLAUDE_CODE_PLUGIN_DIRS` (set in the dotfiles'
+`~/.claude/settings.json`), so add a new mod's link there too. Check one with
+`claude plugin validate mods/<name>` and `claude plugin test mods/<name>`.
 
 It also copies `AGENTS.md` to `~/.claude/CLAUDE.md` and
 `~/.codex/AGENTS.md`. It does not link or overwrite live settings.

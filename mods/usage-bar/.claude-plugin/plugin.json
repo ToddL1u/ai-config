@@ -1,0 +1,6 @@
+{
+  "name": "usage-bar",
+  "version": "0.1.0",
+  "description": "Pill row above the prompt: 5h and 7d rate-limit windows with pace and reset, session tokens, cost, branch and node",
+  "types": "./types/index.d.ts"
+}

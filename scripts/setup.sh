@@ -172,6 +172,12 @@ for skill_path in "$REPO_ROOT"/skills/*; do
   manage_link "$skill_path" "$HOME/.claude/skills/$skill_name"
 done
 
+# Claude Code loads each mod from the folder CLAUDE_CODE_PLUGIN_DIRS names.
+for mod_path in "$REPO_ROOT"/mods/*; do
+  [[ -d "$mod_path" ]] || continue
+  manage_link "$mod_path" "$HOME/.claude/mods/$(basename "$mod_path")"
+done
+
 if [[ "$MODE" == "--check" ]]; then
   echo "check summary: $CHANGE_COUNT change(s), $CONFLICT_COUNT conflict(s)"
   if (( CHANGE_COUNT > 0 || CONFLICT_COUNT > 0 )); then

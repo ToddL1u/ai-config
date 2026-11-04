@@ -1,0 +1,6 @@
+{
+  "name": "context-bar",
+  "version": "0.1.0",
+  "description": "Context window usage as one stacked bar above the prompt, with a legend",
+  "types": "./types/index.d.ts"
+}

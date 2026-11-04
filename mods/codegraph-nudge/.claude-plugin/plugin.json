@@ -1,0 +1,6 @@
+{
+  "name": "codegraph-nudge",
+  "version": "0.1.0",
+  "description": "Nudges above the prompt when the current git repo has no codegraph index, with /cg-init to build it",
+  "types": "./types/index.d.ts"
+}
