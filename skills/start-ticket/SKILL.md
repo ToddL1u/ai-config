@@ -35,9 +35,33 @@ ticket key and title supplied by the user as branch-naming input only.
 
 ### 3. Update the base branch safely
 
-Show the current branch, detected default branch, and proposed new branch. If
-not already on the default branch, ask before switching and stop if the user
-declines.
+If the default branch is checked out in another worktree (`git worktree list`
+shows it at a different path), as in a worktree an ADE such as Orca created,
+do not switch to it; git refuses. Use this path instead and skip to step 5:
+
+1. Run `git fetch origin <default-branch>`.
+2. If the current branch has no commits of its own
+   (`git rev-list --count origin/<default-branch>..HEAD` is `0`), it is the
+   placeholder the ADE created. Show the rename and ask before running it:
+
+   ```bash
+   git branch -m <branch-name>
+   git merge --ff-only origin/<default-branch>
+   ```
+
+   If the current branch has a remote upstream, also run
+   `git branch --unset-upstream` so the renamed branch does not track the old
+   remote name.
+3. Otherwise, leave the current branch intact and create the new branch from
+   the fetched base, without tracking it:
+
+   ```bash
+   git switch -c <branch-name> --no-track origin/<default-branch>
+   ```
+
+Otherwise, show the current branch, detected default branch, and proposed new
+branch. If not already on the default branch, ask before switching and stop if
+the user declines.
 
 Fetch the default branch. Switch to the local branch when it exists; otherwise
 create it as a tracking branch from `origin/<default-branch>`. Update an
@@ -63,7 +87,7 @@ git switch -c <branch-name>
 ### 5. Report
 
 Return the user-provided ticket key and title, new branch, detected base
-branch, and final worktree status. The repository must finish on the new
+branch, whether the branch was renamed or created, and final worktree status. The repository must finish on the new
 branch with the same clean worktree state it had before the workflow.
 
 ## Invariants
