@@ -43,7 +43,7 @@ const PANE = {
   props: { title: 'dev-flow', isFocused: false, bodyColumns: 60, placement: 'dock', scroll: { offset: 0, bodyRows: 30 }, view: {} },
 } as const
 
-function engine(on: On, file: string | null, opened: string[] = []) {
+function engine(on: On, file: string | null, opened: string[] = [], branch = 'main') {
   on('ui.render', ($, e) => {
     const { Box } = $.ui.resolve(e)
     return <Box />
@@ -51,7 +51,10 @@ function engine(on: On, file: string | null, opened: string[] = []) {
   on('command.register', () => ({ value: { command: 'devflow' } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.cwd', () => ({ value: '/repo/app' }))
-  on('process.run', () => ({ value: { exitCode: 0, stdout: '/repo/app\n', stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }))
+  on('process.run', (_, e) => {
+    const stdout = e.argv.includes('--show-current') ? `${branch}\n` : '/repo/app\n'
+    return { value: { exitCode: 0, stdout, stderr: '', isStdoutTruncated: false, isStderrTruncated: false } }
+  })
   on('fs.exists', () => ({ value: file !== null }))
   on('fs.read', () => ({ value: file ?? '' }))
   on('ui.open', (_, e) => (opened.push(e.id), { value: { isPlaced: true } }))
@@ -96,5 +99,27 @@ test('no file: the pane stays shut until /devflow, then says so', async ($, on) 
   expect(answer.text).toMatch(/No \.ai\/feature-progress\.md/)
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /No \.ai\/feature-progress\.md yet/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('a file from another branch stays shut and is marked stale', async ($, on) => {
+  const opened: string[] = []
+  engine(on, DRIFTED, opened, 'feat/SPROM-2000-other')
+  await $.session.start({ cwd: '/repo/app', surface: 'terminal', isInteractive: true })
+  expect(opened).toEqual([])
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /STALE · written on feat\/SPROM-1206-mission, now on feat\/SPROM-2000-other/ })).toBeDefined()
+  await ui.unmount()
+})
+
+test('a file from the current branch opens without a stale marker', async ($, on) => {
+  const opened: string[] = []
+  engine(on, DRIFTED, opened, 'feat/SPROM-1206-mission')
+  await $.session.start({ cwd: '/repo/app', surface: 'terminal', isInteractive: true })
+  expect(opened).toEqual(['devflow'])
+
+  const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
+  expect(await ui.find({ type: 'Text', text: /STALE/ })).toBeUndefined()
   await ui.unmount()
 })

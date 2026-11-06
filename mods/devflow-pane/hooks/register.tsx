@@ -17,6 +17,10 @@ const STATE_COLOR: Record<string, string> = {
 
 const progress = atom({ plugin: 'devflow-pane', key: 'progress' } as const, null)
 
+/** True when the file names a branch other than the checked-out one. */
+const isStale = (fileBranch: string | null, current: string | null) =>
+  fileBranch !== null && current !== null && fileBranch !== current
+
 /** Reads the progress file at the git root (or the working directory outside a repo). */
 async function refresh($: EngineInterface): Promise<Progress> {
   const cwd = await $.session.cwd()
@@ -24,7 +28,9 @@ async function refresh($: EngineInterface): Promise<Progress> {
   const root = git !== null && git.exitCode === 0 ? git.stdout.trim() : cwd
   const path = `${root}/${FILE}`
   const text = (await $.fs.exists(path)) ? await $.fs.read(path).catch(() => null) : null
-  const next: Progress = { root, path, text: typeof text === 'string' ? text : null }
+  const head = await $.process.run(['git', 'branch', '--show-current'], { cwd }).catch(() => null)
+  const branch = head !== null && head.exitCode === 0 && head.stdout.trim() !== '' ? head.stdout.trim() : null
+  const next: Progress = { root, path, text: typeof text === 'string' ? text : null, branch }
   await update($, progress, () => next)
 
   return next
@@ -35,10 +41,11 @@ export const register: Register = on => {
     await $.command.register({ name: 'devflow', description: 'Open the dev-flow progress pane' })
     const started = await next(e)
     const found = await refresh($).catch(() => null)
-    // Open by itself only for work still going on.
+    // Open by itself only for work still going on on this branch.
     if (found !== null && found.text !== null) {
-      const { state } = summarize(found.text)
-      if (state === null || state === 'IN_PROGRESS') void $.ui.open({ id: PANE, title: TITLE })
+      const { state, branch } = summarize(found.text)
+      const live = state === null || state === 'IN_PROGRESS'
+      if (live && !isStale(branch, found.branch)) void $.ui.open({ id: PANE, title: TITLE })
     }
 
     return started
@@ -86,6 +93,7 @@ export const register: Register = on => {
     }
 
     const s = summarize(found.text)
+    const stale = isStale(s.branch, found.branch)
     const criteria =
       s.criteria === null
         ? null
@@ -95,6 +103,11 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="column" rowGap={1}>
+        {stale && (
+          <Text color="warning" wrap="wrap">
+            STALE · written on {s.branch}, now on {found.branch}
+          </Text>
+        )}
         <Box flexDirection="column">
           {s.title !== null && <Text bold wrap="wrap">{s.title}</Text>}
           <Text wrap="truncate-end">
