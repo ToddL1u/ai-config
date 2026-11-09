@@ -1,0 +1,6 @@
+interface:
+  display_name: "Implement Board"
+  short_description: "Build a board's Ready cards in parallel worktrees"
+  default_prompt: "Use $implement-board to build this feature board's Ready cards in parallel and merge them into the current branch."
+policy:
+  allow_implicit_invocation: false
