@@ -131,7 +131,8 @@ resumes from there. A repository ticket-set file is written but not committed.
 
 Report the Epic, any sync drift, cards in topological order, the selected card,
 graph validation, open questions needing `grilling`, and published IDs when
-published. Then stop: the user starts `/dev-flow` next.
+published. Then stop: the user starts `dev-flow` next, or `/implement-board`
+when several cards are Ready.
 
 ## Source
 

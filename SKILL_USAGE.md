@@ -47,13 +47,13 @@ grill-with-docs → to-spec → to-tickets → dev-flow → review-sweep → shi
   `.ai/boards/<feature>.md` and selects one into `.ai/current-card.md`.
   It publishes to Jira or GitHub only on request.
 - `dev-flow` implements the current card, test-first through `tdd`. On a Jira
-  ticket, run `start-ticket` first.
+  ticket, run `start-ticket` first. When the board has several Ready cards,
+  `implement-board` runs one `dev-flow` worker per card in parallel worktrees
+  and merges each into the current branch.
 - `review-sweep` runs inside `dev-flow`; add `codex-review` for a second model.
 - `ship` pushes the branch: `commit-chunk` before it, then `uat-merge` and
   `deploy-uat` where UAT applies.
 - `retro` turns the session's friction into skill and setup improvements.
-
-`dev-flow` builds one card per run; implement Ready cards one at a time.
 
 Small, resolved changes can enter at `dev-flow`. Hard bugs enter at `debug`.
 Read-only investigations enter at `understand-feature`.
@@ -123,13 +123,6 @@ Read-only investigations enter at `understand-feature`.
   `.ai/current-card.md`. It publishes tickets to Jira or GitHub only when you
   name a destination, after a preview you approve.
 
-### `executor-handoff`
-
-- **Use when:** One `to-tickets` card is Ready and another agent should
-  implement it from the original PRD and Figma sources.
-- **Prompt:** `/executor-handoff Create a handoff for C2 for Claude Code using the linked PRD and Figma frame.`
-- **Note:** It creates a source-pinned private brief and stops before implementation.
-
 ### `start-ticket`
 
 - **Use when:** An approved Jira ticket is ready and you need to fetch it,
@@ -148,9 +141,20 @@ Read-only investigations enter at `understand-feature`.
 
 - **Use when:** You want a feature, approved spec, or prepared ticket
   implemented through inspect, plan, TDD, verification, and final review.
-- **Prompt:** `/dev-flow Implement the approved ticket SPF-482 from its current branch.`
+- **Prompt:** `Use dev-flow. Implement the approved ticket SPF-482 from its current branch.`
 - **Note:** This is the default implementation workflow. It composes
-  `test-impact`, `tdd`, and `review-sweep` when appropriate.
+  `test-impact`, `tdd`, and `review-sweep` when appropriate. It also takes the
+  current board card from `.ai/current-card.md`.
+
+### `implement-board`
+
+- **Use when:** A feature board has several Ready cards and you want them
+  built in parallel on the current feature branch.
+- **Prompt:** `/implement-board checkout-reminders 2`
+- **Note:** One fresh worker per card runs `dev-flow` in its own worktree (an
+  Orca pane when inside Orca); finished cards merge with `--no-ff`, failed ones
+  are parked as Blocked with their worker kept open, and one `review-sweep`
+  covers the whole branch at the end. It leaves the worktrees for you to remove.
 
 ### `debug`
 
@@ -350,9 +354,9 @@ Read-only investigations enter at `understand-feature`.
 - Unclear repository idea → `grill-with-docs`
 - Resolved idea with no written requirements → `to-spec`
 - Requirements that need slicing, or a stale feature board → `to-tickets`
-- Ready card for another agent → `executor-handoff`
 - Approved Jira ticket, no branch → `start-ticket`
 - Ready to implement → `dev-flow`
+- Several Ready cards on a board → `implement-board`
 - Hard unreproduced bug → `debug`
 - Need to understand only → `understand-feature`
 - Need browser evidence → `qa-browser`

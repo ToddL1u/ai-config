@@ -30,8 +30,8 @@ Prefer these routes:
 - Resolved requirements (approved spec, PRD and Figma, ticket, or settled
   discussion) that need vertical slices, or a feature board that must be synced
   with the code → `to-tickets`.
-- Ready board card that another agent will implement from PRD and design
-  sources → `executor-handoff`.
+- Feature board with several Ready cards to build in parallel →
+  `implement-board`.
 - Selected board card, approved single-slice spec, or resolved change small
   enough for one implementation flow → `dev-flow`.
 - Approved Jira ticket without a prepared ticket branch → `start-ticket`.
@@ -66,8 +66,9 @@ grill-with-docs → to-spec → to-tickets → dev-flow → review-sweep → shi
 Skip `to-spec` when a PRD and Figma or an approved ticket already define the
 requirements. Run `start-ticket` before `dev-flow` on a Jira ticket.
 `review-sweep` runs inside `dev-flow`. Around `ship`: `commit-chunk` before it,
-`uat-merge` and `deploy-uat` after it where UAT applies. `dev-flow` builds one
-card per run.
+`uat-merge` and `deploy-uat` after it where UAT applies. For several Ready
+cards, `implement-board` runs `dev-flow` workers in parallel in place of the
+`dev-flow` step.
 
 For a small resolved change, go directly to `dev-flow`. For a hard bug, enter
 through `debug`; for understanding only, enter through `understand-feature`.
