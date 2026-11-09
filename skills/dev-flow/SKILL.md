@@ -30,6 +30,14 @@ Implement one feature to verified completion without requiring turn-by-turn prom
      criteria, scope, and non-goals as the active slice, and its source
      references (PRD, Figma, spec, ticket) as authoritative. Record the card key
      and its board path. Do not split the card again.
+
+     When the card came from `.ai/current-card.md`, read its board's frontier
+     first: cards whose status is `Ready` and whose dependencies are all
+     `Done`. With two or more frontier cards whose scopes touch separate files,
+     stop before editing and offer the user two choices: run them all in
+     parallel with `/implement-board <feature>`, or build only the current card
+     here. With one frontier card, or cards that share files, continue with the
+     current card and say why.
 4. Record the authoritative review sources:
    - approved ticket and parent spec references and versions;
    - board card key, board path, and the card's source references;
