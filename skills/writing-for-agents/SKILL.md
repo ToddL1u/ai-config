@@ -84,4 +84,4 @@ You win twice: fewer tokens, and a sharper hook for the agent to hang its thinki
 
 Adapted from Matt Pocock's
 [writing-for-agents](https://github.com/mattpocock/skills/tree/main/skills/productivity/writing-for-agents)
-at commit `4ae2317`. MIT License, Copyright (c) 2026 Matt Pocock.
+at commit `4ae2317`. MIT License, Copyright (c) 2026 Matt Pocock; see [LICENSE](LICENSE).
