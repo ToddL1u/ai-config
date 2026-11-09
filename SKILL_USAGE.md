@@ -286,6 +286,15 @@ Read-only investigations enter at `understand-feature`.
 - **Note:** It creates a human-readable backup, then overwrites the original
   with the compressed version.
 
+### `writing-for-agents`
+
+- **Use when:** You create or edit a skill, `AGENTS.md`, `CLAUDE.md`, or any
+  document an agent reaches through a pointer.
+- **Prompt:** `Use writing-for-agents. Review skills/handover/SKILL.md and list what to prune or disclose.`
+- **Note:** Reference only. The agent also loads it on its own when editing
+  these files. It covers context pointers, progressive disclosure, completion
+  criteria, leading words, and no-op pruning.
+
 ### `english-learn`
 
 - **Use when:** You want vocabulary and phrases extracted from an English
