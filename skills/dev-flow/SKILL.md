@@ -25,8 +25,14 @@ Implement one feature to verified completion without requiring turn-by-turn prom
      the active slice, and the spec's goals, non-goals, constraints, and testing
      decisions as its boundary. Record both stable references. Do not re-specify
      or split the ticket again.
+   - **Board card** — the request names no other input and
+     `.ai/current-card.md` exists. Treat the card's outcome, acceptance
+     criteria, scope, and non-goals as the active slice, and its source
+     references (PRD, Figma, spec, ticket) as authoritative. Record the card key
+     and its board path. Do not split the card again.
 4. Record the authoritative review sources:
    - approved ticket and parent spec references and versions;
+   - board card key, board path, and the card's source references;
    - approved spec reference and version; or
    - acceptance criteria, constraints, and non-goals derived from a raw
      request.
@@ -62,6 +68,10 @@ Use the repository's own commands and conventions. Do not assume a framework, pa
 Do not pause merely to ask whether to proceed to the next loop step. Continue while the next action is safe, in scope, and objectively verifiable. Stop at the terminal conditions in the loop.
 
 ## Final report
+
+When the input was a board card and the terminal state is `SUCCESS`, set that
+card's `Status` to `Done` on its board. Leave `Last verified` for the next
+`to-tickets` sync.
 
 Report:
 
