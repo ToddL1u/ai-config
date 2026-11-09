@@ -1,5 +1,6 @@
 import type { On } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
+import type { TestBody } from 'claude-code/testing'
 
 import { summarize } from './parse'
 
@@ -43,7 +44,11 @@ const PANE = {
   props: { title: 'dev-flow', isFocused: false, bodyColumns: 60, placement: 'dock', scroll: { offset: 0, bodyRows: 30 }, view: {} },
 } as const
 
-function engine(on: On, file: string | null, opened: string[] = [], branch = 'main') {
+type Seen = { opened: string[]; closed: string[]; status: (string | undefined)[] }
+
+function engine(on: On, file: string | null, branch = 'main'): Seen {
+  const seen: Seen = { opened: [], closed: [], status: [] }
+  const up = new Set<string>()
   on('ui.render', ($, e) => {
     const { Box } = $.ui.resolve(e)
     return <Box />
@@ -57,8 +62,20 @@ function engine(on: On, file: string | null, opened: string[] = [], branch = 'ma
   })
   on('fs.exists', () => ({ value: file !== null }))
   on('fs.read', () => ({ value: file ?? '' }))
-  on('ui.open', (_, e) => (opened.push(e.id), { value: { isPlaced: true } }))
+  on('ui.status', (_, e) => (seen.status.push(e.text), { value: undefined }))
+  on('ui.open', (_, e) => (seen.opened.push(e.id), up.add(e.id), { value: { isPlaced: true } }))
+  on('ui.close', (_, e) => (seen.closed.push(e.id), up.delete(e.id), { value: undefined }))
+  on('ui.panes', () => ({
+    value: [...up].map(id => ({ id, title: id, isShown: true, isFocused: false, isPlaced: true })),
+  }))
+
+  return seen
 }
+
+const run = ($: Parameters<TestBody>[0]) =>
+  $.command.run({ command: 'devflow', args: '', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 160 } })
+const start = ($: Parameters<TestBody>[0]) =>
+  $.session.start({ cwd: '/repo/app', surface: 'terminal', isInteractive: true })
 
 test('summarize reads the template', () => {
   const s = summarize(TEMPLATE)
@@ -76,49 +93,58 @@ test('summarize tolerates a drifted file', () => {
   expect(s.next).toBe('user runs e2e with local proxy')
 })
 
-test('an in-progress file opens the pane and shows its summary', async ($, on) => {
-  const opened: string[] = []
-  engine(on, TEMPLATE, opened)
-  await $.session.start({ cwd: '/repo/app', surface: 'terminal', isInteractive: true })
-  expect(opened).toEqual(['devflow'])
+test('starts collapsed: a status line, no pane', async ($, on) => {
+  const seen = engine(on, TEMPLATE)
+  await start($)
+  expect(seen.opened).toEqual([])
+  expect(seen.status.at(-1)).toBe('dev-flow · IN_PROGRESS · 1/2 criteria · Next: Write the remove test · /devflow to expand')
+})
 
+test('/devflow expands the pane, then collapses it', async ($, on) => {
+  const seen = engine(on, TEMPLATE)
+  await start($)
+
+  expect((await run($)).text).toBe('dev-flow pane opened.')
+  expect(seen.opened).toEqual(['devflow'])
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /IN_PROGRESS/ })).toBeDefined()
   expect(await ui.find({ type: 'Text', text: /1\/2 criteria/ })).toBeDefined()
-  expect(await ui.find({ type: 'Text', text: /Write the remove test/ })).toBeDefined()
   await ui.unmount()
+
+  expect((await run($)).text).toBe('dev-flow pane collapsed.')
+  expect(seen.closed).toEqual(['devflow'])
+  expect(seen.status.at(-1)).toMatch(/IN_PROGRESS/)
 })
 
-test('no file: the pane stays shut until /devflow, then says so', async ($, on) => {
-  const opened: string[] = []
-  engine(on, null, opened)
-  await $.session.start({ cwd: '/repo/app', surface: 'terminal', isInteractive: true })
-  expect(opened).toEqual([])
+test('no file: no status line; /devflow says so', async ($, on) => {
+  const seen = engine(on, null)
+  await start($)
+  expect(seen.opened).toEqual([])
+  expect(seen.status.at(-1)).toBeUndefined()
 
-  const answer = await $.command.run({ command: 'devflow', args: '', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 160 } })
-  expect(answer.text).toMatch(/No \.ai\/feature-progress\.md/)
+  expect((await run($)).text).toMatch(/No \.ai\/feature-progress\.md/)
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /No \.ai\/feature-progress\.md yet/ })).toBeDefined()
   await ui.unmount()
 })
 
-test('a file from another branch stays shut and is marked stale', async ($, on) => {
-  const opened: string[] = []
-  engine(on, DRIFTED, opened, 'feat/SPROM-2000-other')
-  await $.session.start({ cwd: '/repo/app', surface: 'terminal', isInteractive: true })
-  expect(opened).toEqual([])
+test('a file from another branch is marked stale', async ($, on) => {
+  const seen = engine(on, DRIFTED, 'feat/SPROM-2000-other')
+  await start($)
+  expect(seen.status.at(-1)).toMatch(/STALE \(feat\/SPROM-1206-mission\)/)
 
+  await run($)
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /STALE · written on feat\/SPROM-1206-mission, now on feat\/SPROM-2000-other/ })).toBeDefined()
   await ui.unmount()
 })
 
-test('a file from the current branch opens without a stale marker', async ($, on) => {
-  const opened: string[] = []
-  engine(on, DRIFTED, opened, 'feat/SPROM-1206-mission')
-  await $.session.start({ cwd: '/repo/app', surface: 'terminal', isInteractive: true })
-  expect(opened).toEqual(['devflow'])
+test('a file from the current branch has no stale marker', async ($, on) => {
+  const seen = engine(on, DRIFTED, 'feat/SPROM-1206-mission')
+  await start($)
+  expect(seen.status.at(-1)).not.toMatch(/STALE/)
 
+  await run($)
   const ui = await $.ui.mount({ ...PANE, surface: 'terminal' })
   expect(await ui.find({ type: 'Text', text: /STALE/ })).toBeUndefined()
   await ui.unmount()

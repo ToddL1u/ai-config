@@ -32,26 +32,44 @@ async function refresh($: EngineInterface): Promise<Progress> {
   const branch = head !== null && head.exitCode === 0 && head.stdout.trim() !== '' ? head.stdout.trim() : null
   const next: Progress = { root, path, text: typeof text === 'string' ? text : null, branch }
   await update($, progress, () => next)
+  $.ui.status(statusLine(next))
 
   return next
 }
 
+/** The collapsed view: one line under the prompt; none without a progress file. */
+function statusLine(found: Progress): string | undefined {
+  if (found.text === null) return undefined
+  const s = summarize(found.text)
+  const parts = [`dev-flow · ${s.state ?? 'NO STATE'}`]
+  if (isStale(s.branch, found.branch)) parts.push(`STALE (${s.branch})`)
+  if (s.criteria !== null) {
+    parts.push(s.criteria.done === null ? `${s.criteria.total} criteria` : `${s.criteria.done}/${s.criteria.total} criteria`)
+  }
+  if (s.next !== null) parts.push(`Next: ${s.next}`)
+
+  return `${parts.join(' · ')} · /devflow to expand`
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'devflow', description: 'Open the dev-flow progress pane' })
+    await $.command.register({ name: 'devflow', description: 'Expand or collapse the dev-flow progress pane' })
     const started = await next(e)
-    const found = await refresh($).catch(() => null)
-    // Open by itself only for work still going on on this branch.
-    if (found !== null && found.text !== null) {
-      const { state, branch } = summarize(found.text)
-      const live = state === null || state === 'IN_PROGRESS'
-      if (live && !isStale(branch, found.branch)) void $.ui.open({ id: PANE, title: TITLE })
-    }
+    // Starts collapsed: the status line carries the summary until /devflow.
+    await refresh($).catch(() => null)
 
     return started
   })
 
+  // Toggles between the pane and the collapsed status line.
   on('command.run', { command: 'devflow' }, async $ => {
+    const isUp = (await $.ui.panes()).some(pane => pane.id === PANE)
+    if (isUp) {
+      await $.ui.close({ id: PANE })
+
+      return { text: 'dev-flow pane collapsed.' }
+    }
+
     const found = await refresh($)
     await $.ui.open({ id: PANE, title: TITLE })
 
