@@ -1,0 +1,6 @@
+interface:
+  display_name: "Retro"
+  short_description: "Suggest agent-environment improvements after a session"
+  default_prompt: "Use $retro to review this session and suggest improvements to the agent environment."
+policy:
+  allow_implicit_invocation: false
