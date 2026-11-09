@@ -1,13 +1,13 @@
 ---
 name: codex-review
-description: Hand a read-only code review to Codex running as an interactive agent in a separate Orca or Herdr pane, so the user can watch it work, then close the pane once the report is relayed; fall back to headless codex exec outside both. Use when the user asks for a codex review, a review by Codex, a second-model review, or a review in an Orca or Herdr pane.
+description: Codex review: hand a read-only code review to Codex in a separate Orca or Herdr pane the user can watch, or headless codex exec outside both, and relay its report. Use when the user asks for a Codex or second-model review.
 ---
 
 # Codex Review
 
-Codex performs the whole review. The calling agent only resolves the target,
-starts Codex, and relays its report. The review is read-only: never edit,
-fix, stage, or commit as part of it.
+Codex performs the whole review. The calling agent resolves the target,
+starts Codex, and relays its report. The review is read-only: it changes no
+files, stages nothing, and commits nothing.
 
 If the calling agent is itself Codex, skip the pane and review directly with
 the prompt below.
@@ -80,164 +80,28 @@ per risk.
 READY or NEEDS WORK, with one line of reasoning.
 ```
 
-## 3. Orca path
+## 3. Choose where Codex runs
 
-Use this path when `ORCA_TERMINAL_HANDLE` is set and `orca` is on `PATH`;
-that handle is the caller pane. Otherwise go to the Herdr path. Orca commands
-take `--json`; read handles from responses rather than guessing them.
+Take the first that applies:
 
-1. Split the caller pane and start Codex read-only with no approval prompts:
-
-   ```bash
-   orca terminal split --terminal "$ORCA_TERMINAL_HANDLE" --direction horizontal \
-     --command "codex --sandbox read-only --ask-for-approval never" --json
-   ```
-
-   Read the new pane handle from `.result.split.handle`. A timeout does not
-   mean the split failed: re-run with `--retry-split <leafId>` from the error
-   instead of splitting again.
-
-2. Wait for Codex to be ready:
+1. **Orca**: `ORCA_TERMINAL_HANDLE` is set and `orca` is on `PATH`. Follow
+   [references/orca.md](references/orca.md).
+2. **Herdr**: `HERDR_ENV` is `1`, or `herdr` is on `PATH` and
+   `herdr status server` reports `status: running`. Follow
+   [references/herdr.md](references/herdr.md); when it finds no caller pane,
+   use the headless path.
+3. **Headless**: everything else. Run it in the background when the agent
+   supports it, because reviews take several minutes:
 
    ```bash
-   orca terminal wait --terminal <handle> --for tui-idle --timeout-ms 60000 --json
+   report="$(mktemp "${TMPDIR:-/tmp}/codex-review.XXXXXX")"
+   codex exec --sandbox read-only -C "$PWD" -o "$report" - < "$prompt_file"
    ```
 
-   If `.result.wait.blockedReason` is set (for example `agent-update-prompt`
-   or a folder-trust dialog), Codex is blocked on a startup dialog. Run
-   `orca terminal read --terminal <handle> --screen --json`, show the user the
-   dialog, and do not answer it for them. Once the user has handled it, wait
-   again, then continue.
+   Then read `$report`. When it is empty, report Codex's exit status and
+   stderr.
 
-3. Submit the prompt and wait:
-
-   ```bash
-   orca terminal send --terminal <handle> --text "$(cat "$prompt_file")" --enter --wait-submit 15 --json
-   orca terminal wait --terminal <handle> --for tui-idle --timeout-ms 540000 --json
-   ```
-
-   Keep every wait at or under 540000 ms so it ends before the 10-minute
-   foreground Bash limit.
-
-   - `agent_prompt_blocked` or a `blockedReason`: read with `--screen`, show
-     the user the question, and do not answer it for them.
-   - Never resend a prompt. After an ambiguous send failure, re-issue the
-     exact command with the reported `--retry-request <id>`.
-   - Wait `timeout` while `status` is still `running`: keep waiting with the
-     same wait command, repeating as needed.
-
-4. Read the report from the accumulated output, not from a cursor taken
-   before the send (Codex repaints, so a cursor read can come back empty):
-
-   ```bash
-   orca terminal read --terminal <handle> --limit 1000 --json
-   ```
-
-   Take the lines in `.result.terminal.tail` after the submitted prompt. If
-   `limited` is true, page with `--cursor <oldestCursor> --limit <n>`.
-
-5. Once the full report is read, close the pane this skill created:
-
-   ```bash
-   orca terminal close --terminal <handle> --json
-   ```
-
-   Keep the pane open instead if the report could not be read in full, or
-   Codex is blocked or still working, and tell the user why.
-
-## 4. Herdr path
-
-Herdr commands return JSON; read IDs from responses rather than guessing them.
-
-Resolve the caller pane before choosing a path. Do not rely on `HERDR_ENV`
-alone: background or forked agent sessions run inside Herdr without
-inheriting its environment variables.
-
-1. If `test "${HERDR_ENV:-}" = 1` passes and `HERDR_PANE_ID` is set, use
-   `$HERDR_PANE_ID` as the caller pane.
-2. Otherwise, if `herdr` is on `PATH` and `herdr status server` reports
-   `status: running`, run `herdr pane list` and pick the caller pane:
-   - prefer the pane with `"focused": true` whose `cwd` equals `$PWD`;
-   - else the single pane with `"agent": "claude"` whose `cwd` equals `$PWD`.
-   If no pane matches, or several match with no focused one, ask the user
-   which pane to split instead of guessing.
-3. If neither resolves a pane, use the headless fallback.
-
-Then:
-
-1. Pick the split direction from the caller pane: `right` when wide, `down`
-   when narrow or tall.
-
-   ```bash
-   herdr pane layout --pane <caller-pane-id>
-   herdr pane split <caller-pane-id> --direction right --cwd "$PWD" --no-focus
-   ```
-
-   Read the new pane ID from `.result.pane.pane_id`.
-
-2. Start Codex read-only with no approval prompts. Pick `<agent-name>`: run
-   `herdr agent list`; use `codex-review` if no agent has that name, else
-   `codex-review-<short-head-sha>`. Use that exact name in every later
-   command.
-
-   ```bash
-   herdr agent start <agent-name> --kind codex --pane <pane-id> -- --sandbox read-only --ask-for-approval never
-   ```
-
-   If the start returns `agent_not_ready`, Codex is blocked on a startup
-   dialog (for example, folder trust). Do not prompt it yet:
-   - run `herdr agent read <agent-name> --source recent-unwrapped --lines 80`
-     and show the user the dialog; do not answer it for them;
-   - once the user has handled it, run
-     `herdr agent wait <agent-name> --until idle --timeout 540000`, then
-     continue.
-
-3. Submit the prompt and wait:
-
-   ```bash
-   herdr agent prompt <agent-name> "$(cat "$prompt_file")" --wait --timeout 540000
-   ```
-
-   Keep every wait at or under 540000 ms so it ends before the 10-minute
-   foreground Bash limit.
-
-   - `blocked`: run `herdr agent read <agent-name> --source recent-unwrapped --lines 80`,
-     show the user the question, and do not answer it for them.
-   - `timeout` or `agent_prompt_stalled`: do not resend. Check
-     `herdr agent get <agent-name>` and `agent read` first; keep waiting with
-     `herdr agent wait <agent-name> --timeout 540000` while it is still working,
-     repeating as needed.
-
-4. Read the report:
-
-   ```bash
-   herdr agent read <agent-name> --source recent-unwrapped --lines 400
-   ```
-
-   If the start of the report is cut off, read again with more lines.
-
-5. Once the full report is read, close the pane this skill created:
-
-   ```bash
-   herdr pane close <pane-id>
-   ```
-
-   Keep the pane open instead if the report could not be read in full, or the
-   agent is `blocked` or still working, and tell the user why.
-
-## 5. Headless fallback
-
-Use this path when no caller pane resolves (see sections 3 and 4). Run it in the background when the agent
-supports it, because reviews can take several minutes:
-
-```bash
-report="$(mktemp "${TMPDIR:-/tmp}/codex-review.XXXXXX")"
-codex exec --sandbox read-only -C "$PWD" -o "$report" - < "$prompt_file"
-```
-
-Then read `$report`. If it is empty, report Codex's exit status and stderr.
-
-## 6. Relay
+## 4. Relay
 
 Present Codex's report verbatim under this header:
 
@@ -251,13 +115,19 @@ Base: <sha>  HEAD: <sha>
 <Codex report, unchanged>
 ```
 
-Do not re-rank, merge, or drop findings. If a finding contradicts something
+Keep every finding as Codex ranked it. When a finding contradicts something
 you can check quickly, add a short `Caller notes` section after the report,
 labeled as your own and written in Traditional Chinese.
 
 ## Guardrails
 
-- Read-only. A review request never authorizes fixes.
-- Do not close panes, tabs, or workspaces this skill did not create.
-- Never run `herdr server stop` or `orca terminal close --worktree ... --all`.
-- Do not answer Codex approval or question prompts on the user's behalf.
+- Read-only: a review request authorizes no fixes.
+- Codex's approval prompts, startup dialogs, and questions belong to the user:
+  show them verbatim and wait for the user to handle them.
+- Keep each wait at or under 540000 ms so it ends inside the 10-minute
+  foreground command limit, and repeat it while Codex is still working.
+- Close only the pane this skill opened, and only after the full report is
+  read. When the report is incomplete or Codex is blocked or still working,
+  leave the pane open and tell the user why.
+- Leave the multiplexer itself running: no `herdr server stop`, no
+  `orca terminal close --worktree ... --all`.
