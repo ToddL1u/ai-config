@@ -1,6 +1,6 @@
 ---
 name: codex-review
-description: Codex review: hand a read-only code review to Codex in a separate Orca or Herdr pane the user can watch, or headless codex exec outside both, and relay its report. Use when the user asks for a Codex or second-model review.
+description: "Codex review: hand a read-only code review to Codex in a separate Orca or Herdr pane the user can watch, or headless codex exec outside both, and relay its report. Use when the user asks for a Codex or second-model review."
 ---
 
 # Codex Review

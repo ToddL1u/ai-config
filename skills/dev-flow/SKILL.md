@@ -1,7 +1,6 @@
 ---
 name: dev-flow
-description: Implement a feature through a bounded inspect, plan, build, verify, and review loop with persistent progress.
-disable-model-invocation: true
+description: "Dev flow: implement one feature, board card, or ticket end to end through a bounded inspect, plan, build, verify, and review loop with persistent progress. Use when asked to implement or continue a feature, card, or ticket."
 ---
 
 # Dev Flow
@@ -25,8 +24,9 @@ Implement one feature to verified completion without requiring turn-by-turn prom
      the active slice, and the spec's goals, non-goals, constraints, and testing
      decisions as its boundary. Record both stable references. Do not re-specify
      or split the ticket again.
-   - **Board card** — the request names no other input and
-     `.ai/current-card.md` exists. Treat the card's outcome, acceptance
+   - **Board card** — the request carries a board card's text (as a worker
+     dispatched by `implement-board` receives it), or names no other input
+     while `.ai/current-card.md` exists. Treat the card's outcome, acceptance
      criteria, scope, and non-goals as the active slice, and its source
      references (PRD, Figma, spec, ticket) as authoritative. Record the card key
      and its board path. Do not split the card again.
@@ -69,9 +69,10 @@ Do not pause merely to ask whether to proceed to the next loop step. Continue wh
 
 ## Final report
 
-When the input was a board card and the terminal state is `SUCCESS`, set that
-card's `Status` to `Done` on its board. Leave `Last verified` for the next
-`to-tickets` sync.
+When the input was `.ai/current-card.md` and the terminal state is `SUCCESS`,
+set that card's `Status` to `Done` on its board. Leave `Last verified` for the
+next `to-tickets` sync. A card passed in the request belongs to a coordinator
+that owns the board, so leave the board to it.
 
 Report:
 

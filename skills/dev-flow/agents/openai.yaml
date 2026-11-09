@@ -2,5 +2,3 @@ interface:
   display_name: "Dev Flow"
   short_description: "Implement a feature through a bounded loop"
   default_prompt: "Use $dev-flow to implement a feature through a bounded loop."
-policy:
-  allow_implicit_invocation: false

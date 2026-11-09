@@ -51,6 +51,16 @@ for skill_path in "$REPO_ROOT"/skills/*; do
     fail "missing non-empty frontmatter description: $skill_file"
   fi
 
+  # An unquoted description containing ": " is invalid YAML for strict parsers.
+  if awk '
+    NR == 1 && $0 != "---" { exit 1 }
+    NR > 1 && $0 == "---" { exit bad ? 0 : 1 }
+    /^description:[[:space:]]*[^"'"'"'>|[:space:]].*: / { bad=1 }
+    END { if (!bad) exit 1 }
+  ' "$skill_file"; then
+    fail "unquoted description containing ': ' (invalid YAML): $skill_file"
+  fi
+
   case "$SEEN_NAMES" in
     *"|$frontmatter_name|"*) fail "duplicate skill name: $frontmatter_name" ;;
     *) SEEN_NAMES="${SEEN_NAMES}${frontmatter_name}|" ;;
