@@ -16,6 +16,8 @@
 | --- | --- | --- | --- |
 | PRD |  | Behavior and copy |  |
 | Figma |  | Layout, visual states, and responsive behavior |  |
+| Spec |  | Requirements when no PRD exists (reference @ version) |  |
+| Ticket |  | Parent tracker item, when one exists |  |
 
 ## Feature map
 
@@ -28,6 +30,7 @@ C1 -> C2
 ### C1 — [title]
 
 - Status: Proposed
+- Tracker: none
 - Outcome:
 - Scope:
 - Non-goals:

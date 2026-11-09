@@ -1,146 +1,140 @@
 ---
 name: to-tickets
-description: Break one approved specification into dependency-aware tracer-bullet tickets and publish them.
+description: Break resolved requirements into a private, dependency-aware board of vertical-slice cards, and optionally publish them to a tracker.
 disable-model-invocation: true
 ---
 
 # To Tickets
 
-Turn one approved specification into a directed acyclic graph of executable
-vertical slices. Produce the ticket set; do not decide when or how agents run
-it.
+Turn one feature's requirements into a small execution map: a directed acyclic
+graph of vertical-slice cards on a private board, with one card selected for
+`dev-flow`. Plan only: product code, specs, and commits stay untouched.
 
-## Validate the source and destination
+## 1. Read the requirements source
 
-Require a stable specification reference and version. Read the full artifact
-and confirm that its status is `Approved`. If the reference, version, approval
-status, or material requirement is missing, stop without drafting tickets.
+Accept one of these, and record stable references for it:
 
-Read relevant repository instructions, domain documentation, ADRs, code, and
-tests. Use the spec as the authoritative source of feature requirements; do not
-rewrite, broaden, close, or modify it.
+- **Approved spec**: a stable reference and version whose status is `Approved`.
+  Read the full artifact; when the reference, version, or approval is missing,
+  stop without drafting.
+- **PRD and Figma**: the exact PRD sections and Figma frames or nodes.
+- **Tracker item**: a Jira ticket or GitHub issue ID.
+- **Resolved conversation**: decisions already confirmed in this session, such
+  as a grilling outcome.
 
-Choose exactly one publication destination:
+Then read repository instructions, domain docs, ADRs, and the relevant code and
+tests. The source is authoritative and stays unmodified: confirmed decisions are
+fixed, and gaps become assumptions or open questions. Return to `grilling` when
+an open question would change scope, user behaviour, sequencing, or acceptance.
 
-- one repository ticket-set file using an established or user-approved path; or
-- one named issue tracker project.
+## 2. Open the board
 
-If neither the request nor repository convention selects exactly one, ask one
-operational question before drafting. Never publish a fallback copy elsewhere.
+Each feature owns one durable board, reused every time the feature changes:
 
-## Draft tracer-bullet tickets
+- `.ai/boards/<feature>.md`: Epic, card map, dependencies, assumptions, and
+  status. `<feature>` is a stable kebab-case slug naming the product feature.
+- `.ai/current-card.md`: the one card about to enter `dev-flow`; one per
+  worktree, overwritten each time.
 
-Give each ticket a stable draft key such as `T1`, `T2`, and preserve those keys
-across revisions and publication retries.
+Take the slug from the invocation. Otherwise list `.ai/boards/` and ask which
+board this work belongs to, offering a new slug as one option. A branch can
+touch a feature it is not named after, so the branch name never decides the
+slug.
 
-Each ticket must:
+`.ai/` stays private. Check `git check-ignore -q .ai/`; when it fails, add the
+line `.ai/` to the file `git rev-parse --git-path info/exclude` names. The
+shared `.gitignore` and `.ai/` files stay out of every commit.
 
-- deliver a narrow, complete, user-observable or independently verifiable path;
-- fit in one fresh context window;
-- state what it delivers without a layer-by-layer implementation list;
-- include observable acceptance criteria and verification expectations;
-- reference the exact source spec and version;
-- list only blockers that genuinely prevent it from starting;
-- avoid copying the full specification.
+- **Create** when no board exists: copy
+  [assets/feature-board.md](assets/feature-board.md).
+- **Sync** when one exists. A board is a claim about code that has moved:
+  1. Compare its `Last verified` commit with `HEAD`; when they match, skip to
+     the breakdown.
+  2. Check every path, component, and endpoint it names still exists. Correct
+     what moved; mark what is gone as removed, keeping the card's history.
+  3. Correct any card status the code or test suite contradicts.
+  4. Report the drift before proposing new cards.
 
-Prefer vertical slices through the necessary layers. Do not create separate
-schema, backend, frontend, and testing tickets for one behavior.
+  Then reopen the card that owns a changed behaviour, and add a card only for
+  behaviour no card owns.
 
-A wide mechanical refactor that cannot land green as a vertical slice is the
-exception. Express it as expand, bounded migration batches, then contract.
-Block contract on every migration batch. Do not add speculative prefactoring.
+The Epic header always carries `Feature:`, `Branch:` (where the last update was
+made), and `Last verified: <short SHA> (<YYYY-MM-DD>)`, refreshed on every
+create, sync, and edit. A board whose `Last verified` predates the feature's
+latest commit is untrusted until re-verified.
 
-Use this ticket body:
+## 3. Break down the feature
 
-```md
-## Approval
+1. State the Epic as one user or business outcome, with explicit exclusions.
+2. Define a short sequence of cards. Each card is a user-observable or
+   independently verifiable vertical slice through every layer it needs, and
+   fits one fresh `dev-flow` run that lands green. One behaviour stays one
+   card, never split into UI, API, database, or test cards. See
+   [references/example.md](references/example.md).
+3. A wide mechanical refactor that cannot land green as one slice is the
+   exception: express it as expand, bounded migration batches, then contract,
+   with contract blocked by every batch.
+4. Give every card a stable key (`C1`, `C2`, …) and every field of the card
+   quality bar below.
+5. Draw dependencies as `C1 -> C2`, then validate the graph: acyclic, at least
+   one `Ready` card, blockers before dependants, every source requirement
+   covered once or intentionally shared, nothing beyond the source.
+6. Select one `Ready` card and copy its context into `.ai/current-card.md`
+   from [assets/current-card.md](assets/current-card.md), keeping useful notes
+   already there.
 
-Status: Proposed
+Local statuses are `Proposed`, `Ready`, `In progress`, `Blocked`, and `Done`.
+Update the board after the user confirms a changed plan or a card's status
+becomes known. Board text stays in English.
 
-## Source spec
+### Card quality bar
 
-{stable reference} @ {approved version}
+- **Outcome:** a complete user path or independently verifiable result.
+- **Scope and non-goals:** only what that outcome needs.
+- **Mock-first:** what to mock now, what production integration is deferred,
+  and the condition for replacing the mock; `Not needed` only when a mock adds
+  no value.
+- **Acceptance criteria:** observable checks, including empty, error, and
+  permission states that are part of the path.
+- **Verification:** how the criteria will be demonstrated.
+- **Dependencies:** only cards or external decisions that block the start.
+- **Source references:** the governing PRD sections, Figma frames, spec
+  version, or ticket, plus an unavailable-source blocker when access is needed.
+- **Assumptions and open questions:** links to board entries; the card is
+  `Blocked` while either makes acceptance unknowable.
 
-## Ticket key
+## 4. Publish (only on request)
 
-{stable draft key}
+Publish only when the user names a destination: one tracker project (Jira,
+GitHub Issues) or one repository ticket-set file. The board stays the planning
+record either way.
 
-## What to build
+1. Draft one ticket per card from [assets/ticket-body.md](assets/ticket-body.md).
+2. Show the destination, the numbered graph, and every ticket body, and ask one
+   approval question covering all three. Approval comes from this invocation,
+   after this preview; earlier approvals, files, or tracker states never stand
+   in for it. Any change to the shown content gets a fresh preview.
+3. Use `<feature slug or spec reference@version> + <card key>` as each ticket's
+   fingerprint. Reuse an exact match in the destination, and create only the
+   missing tickets, in topological order.
+4. Add native blocking links when the tracker has them; otherwise write the real
+   references into `Blocked by`. Leave the source spec and any parent issue
+   unchanged.
+5. Re-read what was published and verify bodies, source, and edges. Record each
+   real ticket ID in the card's `Tracker:` field on the board.
 
-{The complete behavior this slice delivers.}
+When publishing fails partway, keep what was created: report the created and
+reused mappings, the first failed operation, and what remains, so a retry
+resumes from there. A repository ticket-set file is written but not committed.
 
-## Acceptance criteria
+## 5. Report
 
-- [ ] {Observable criterion}
+Report the Epic, any sync drift, cards in topological order, the selected card,
+graph validation, open questions needing `grilling`, and published IDs when
+published. Then stop: the user starts `/dev-flow` next.
 
-## Verification
+## Source
 
-- {How completion is proved}
-
-## Blocked by
-
-- {ticket key and title, or `None — can start immediately`}
-```
-
-## Validate and preview the graph
-
-Check before presenting the draft:
-
-- every blocker references a ticket in this draft or an explicitly named
-  existing dependency;
-- the graph has no cycles;
-- at least one ticket is immediately actionable;
-- tickets appear in topological order, blockers before dependants;
-- every spec requirement is covered exactly once or intentionally shared;
-- no ticket expands beyond the approved spec.
-
-Show the exact destination, numbered graph, and complete ticket bodies. Ask one
-approval question covering the shown content, target, and blocker edges. If any
-of them changes, show the revised draft and obtain fresh approval.
-
-Approval permits only mechanical publication metadata: change each ticket's
-status from `Proposed` to `Approved`, add the approval date, and record its real
-tracker identifier.
-
-Obtain approval in the current invocation after showing the preview. An
-existing ticket file, prior publication, tracker status, or approval from an
-earlier session is not approval for a new write. If the selected destination
-already contains the exact approved result and no write is needed, verify it
-and report a no-op; otherwise, do not create or update anything before current
-approval.
-
-## Publish idempotently
-
-After approval, use `{source spec reference} + {spec version} + {ticket key}` as
-the stable publication fingerprint.
-
-For a repository destination, create or update only the approved ticket-set
-file. Keep tickets in topological order, record each ticket's approved status
-and approval date, and preserve blocker references by stable key. Do not commit
-unless separately requested.
-
-For an issue tracker:
-
-1. Search the selected project for each fingerprint and reuse an exact match.
-2. Create only missing tickets in topological order, recording each real ID.
-3. Add native blocking relationships between the published child tickets when
-   available; otherwise write the real references into `Blocked by`. Reference
-   the source spec in the body only; do not create or change a parent
-   relationship.
-4. Re-read the published tickets and verify approved status, bodies, source
-   spec identity, and edges.
-
-Never create a second ticket for an existing fingerprint. If publication fails
-partway, do not roll back or restart. Report the created and reused mappings,
-the first failed operation, and the uncreated tickets or missing edges so a
-retry can resume safely.
-
-Do not close, relabel, or modify the source spec or parent issue.
-
-Report the canonical ticket-set reference, spec version, published
-key-to-identifier mapping, and current frontier. Then stop. Do not invoke
-`start-ticket`, `dev-flow`, or another downstream workflow.
-
-Adapted from Matt Pocock's historical
-[to-tickets](https://github.com/mattpocock/skills/blob/386d4ff/skills/engineering/to-tickets/SKILL.md)
-skill.
+Merges the former `feature-breakdown` skill with Matt Pocock's
+[to-tickets](https://github.com/mattpocock/skills/tree/main/skills/engineering/to-tickets).
+MIT License, Copyright (c) 2026 Matt Pocock; see [LICENSE](LICENSE).
