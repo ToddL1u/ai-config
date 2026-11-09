@@ -22,6 +22,9 @@
 ## Gotchas
 - {trap or constraint}
 
+## Failed approaches
+- {what was tried} — {why it failed, so the next session skips it}
+
 ## References
 - Commits: `{base-sha}..{head-sha}` on `{branch}`
 - {spec, ticket, ADR, board, or file path} — {why it matters}

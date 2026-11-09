@@ -28,6 +28,8 @@ Pick the mode from the argument:
    ```
 
    Take the ticket ID from the branch name (`UPPERCASE-123`) when present.
+   Outside a git repository, skip these commands and build the brief from the
+   session context alone.
 
 2. **Collect the session context** from the conversation, the agent's plan or
    task tracker when one exists, and artifacts such as `.ai/feature-progress.md`,

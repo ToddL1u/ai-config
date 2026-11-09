@@ -48,8 +48,7 @@ Prefer these routes:
 - Only a PR description or PR creation is requested → `pr`.
 - Feature branch must merge into UAT → `uat-merge`.
 - Supported frontend repository must deploy to UAT → `deploy-uat`.
-- Save a lightweight resumable project snapshot → `checkpoint`.
-- Transfer dense context into a fresh session → `handover`.
+- Save session context, or resume from a saved brief → `handover`.
 - Finished session whose friction should improve skills or setup → `retro`.
 
 Do not recommend internal coordination or review skills such as

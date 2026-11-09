@@ -252,13 +252,6 @@ Read-only investigations enter at `understand-feature`.
   parallel work instead of invoking the skill by name. It never chooses the
   surrounding workflow.
 
-### `checkpoint`
-
-- **Use when:** You want a lightweight save, resume, or list operation for
-  project-local work state.
-- **Prompt:** `/checkpoint save the current authentication refactor state`
-- **Prompt:** `/checkpoint resume`
-
 ### `handover`
 
 - **Use when:** Dense context must move into a fresh session without losing

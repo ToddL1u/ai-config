@@ -60,7 +60,7 @@ read, moved, or modified.
 ./scripts/check.sh
 ```
 
-The check validates skill frontmatter, unique names, the expected 41-skill
+The check validates skill frontmatter, unique names, the expected 40-skill
 catalog, hardcoded user paths, agent-specific tool names, and agent-specific
 mutable-state writes.
 
@@ -90,7 +90,6 @@ including `.ai/boards/<feature>.md` and `.ai/current-card.md`. It is not for
 shared product specifications.
 
 ```text
-.ai/checkpoints/
 .ai/journal/
 .ai/handover.md
 .ai/boards/<feature>.md
