@@ -1,6 +1,7 @@
 ---
 name: to-spec
-description: Synthesize resolved conversation context and repository evidence into a concise, testable feature specification, then publish it to one approved destination. Use only when the user explicitly invokes to-spec or asks to turn an already-resolved discussion into a specification or PRD.
+description: Synthesize a resolved discussion into a testable specification and publish it to one approved destination.
+disable-model-invocation: true
 ---
 
 # To Spec

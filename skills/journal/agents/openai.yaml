@@ -1,0 +1,6 @@
+interface:
+  display_name: "Journal"
+  short_description: "Write a dated journal entry from git history"
+  default_prompt: "Use $journal to write a dated journal entry from git history."
+policy:
+  allow_implicit_invocation: false

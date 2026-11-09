@@ -1,6 +1,7 @@
 ---
 name: executor-handoff
-description: Create a private, source-pinned implementation handoff for one Ready feature card when another agent will implement it. Use after feature-breakdown selects a Ready card and before the executor starts dev-flow; use when PRD and Figma references must remain authoritative rather than being approximated in prose.
+description: Create a private, source-pinned implementation handoff for one Ready feature card.
+disable-model-invocation: true
 ---
 
 # Executor Handoff
@@ -59,7 +60,7 @@ product decisions.
 State reusable repository components or patterns as things to inspect, not as
 assumptions that they already satisfy the requirement. Include a copyable
 executor prompt that tells the next agent to re-open the source references,
-inspect the repository before editing, use `dev-flow`, and stop on a material
+inspect the repository before editing, start with `/dev-flow`, and stop on a material
 source conflict or access failure.
 
 ## Handoff

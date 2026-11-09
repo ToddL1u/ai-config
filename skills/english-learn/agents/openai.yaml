@@ -1,0 +1,6 @@
+interface:
+  display_name: "English Learn"
+  short_description: "Extract CEFR vocabulary from English content"
+  default_prompt: "Use $english-learn to extract CEFR vocabulary from English content."
+policy:
+  allow_implicit_invocation: false

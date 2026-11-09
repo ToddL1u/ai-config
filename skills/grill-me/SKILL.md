@@ -1,6 +1,7 @@
 ---
 name: grill-me
-description: Start an explicit grilling session to sharpen a plan or design before action. Use only when the user invokes grill-me or directly asks to be grilled.
+description: Start an explicit grilling session to sharpen a plan or design before action.
+disable-model-invocation: true
 ---
 
 # Grill Me

@@ -1,6 +1,7 @@
 ---
 name: dev-flow
-description: "Implement a feature through a bounded inspect, plan, build, verify, and review loop with persistent progress. Use when starting or continuing a feature, non-trivial product change, or ticket implementation. Triggers on: dev flow, start feature, implement feature, continue feature, development workflow."
+description: Implement a feature through a bounded inspect, plan, build, verify, and review loop with persistent progress.
+disable-model-invocation: true
 ---
 
 # Dev Flow

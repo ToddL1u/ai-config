@@ -1,6 +1,7 @@
 ---
 name: checkpoint
-description: "Save, restore, or list work checkpoints. Triggers on 'checkpoint', 'save state', 'where was I', 'pick up where I left off'."
+description: Save, restore, or list work checkpoints under .ai/checkpoints/.
+disable-model-invocation: true
 ---
 
 # Checkpoint

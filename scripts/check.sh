@@ -6,6 +6,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXPECTED_SKILL_COUNT=40
 ERROR_COUNT=0
 SKILL_COUNT=0
+USER_INVOKED_COUNT=0
 SEEN_NAMES="|"
 
 fail() {
@@ -55,6 +56,25 @@ for skill_path in "$REPO_ROOT"/skills/*; do
     *) SEEN_NAMES="${SEEN_NAMES}${frontmatter_name}|" ;;
   esac
 
+  # A user-invoked skill must be user-invoked for both agents.
+  claude_user_invoked=no
+  if awk '
+    NR == 1 && $0 != "---" { exit 1 }
+    NR > 1 && $0 == "---" { exit found ? 0 : 1 }
+    /^disable-model-invocation:[[:space:]]*true[[:space:]]*$/ { found=1 }
+    END { if (!found) exit 1 }
+  ' "$skill_file"; then
+    claude_user_invoked=yes
+    USER_INVOKED_COUNT=$((USER_INVOKED_COUNT + 1))
+  fi
+  codex_user_invoked=no
+  if grep -q 'allow_implicit_invocation:[[:space:]]*false' "$skill_path/agents/openai.yaml" 2>/dev/null; then
+    codex_user_invoked=yes
+  fi
+  if [[ "$claude_user_invoked" != "$codex_user_invoked" ]]; then
+    fail "invocation mismatch between SKILL.md and agents/openai.yaml: $skill_name"
+  fi
+
 done
 
 if (( SKILL_COUNT != EXPECTED_SKILL_COUNT )); then
@@ -96,4 +116,4 @@ if (( ERROR_COUNT > 0 )); then
   exit 1
 fi
 
-echo "repository check passed: $SKILL_COUNT universal skills, $MOD_COUNT Claude Code mods"
+echo "repository check passed: $SKILL_COUNT universal skills ($USER_INVOKED_COUNT user-invoked), $MOD_COUNT Claude Code mods"

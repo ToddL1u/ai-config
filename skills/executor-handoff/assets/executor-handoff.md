@@ -52,5 +52,5 @@
 ## Executor prompt
 
 ```text
-Read .ai/executor-handoff.md and .ai/current-card.md. Re-open every listed source of truth, then inspect the relevant repository code before editing. Treat the PRD as authoritative for behavior and the design source as authoritative for visual details. If a material source is unavailable or conflicts with another source, stop and report the exact reference and conflict. Otherwise, use dev-flow to implement only this card, run the listed verification, and summarize the diff without unrelated refactors.
+/dev-flow Read .ai/executor-handoff.md and .ai/current-card.md. Re-open every listed source of truth, then inspect the relevant repository code before editing. Treat the PRD as authoritative for behavior and the design source as authoritative for visual details. If a material source is unavailable or conflicts with another source, stop and report the exact reference and conflict. Otherwise, implement only this card, run the listed verification, and summarize the diff without unrelated refactors.
 ```

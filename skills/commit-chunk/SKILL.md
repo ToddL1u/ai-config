@@ -1,6 +1,7 @@
 ---
 name: commit-chunk
-description: Analyze uncommitted Git changes, divide them into buildable sequential commits, review every proposed chunk with the user, and create the approved commits. Use when the user asks to split changes, organize commits, prepare a clean PR history, or commit work in logical chunks.
+description: Split uncommitted changes into buildable sequential commits, reviewing each chunk before committing.
+disable-model-invocation: true
 ---
 
 # Commit Chunk

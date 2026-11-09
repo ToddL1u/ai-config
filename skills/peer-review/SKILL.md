@@ -1,13 +1,7 @@
 ---
 name: peer-review
-description: >
-  Quarterly peer review assistant for Lattice. Use this skill whenever the user mentions
-  peer review, quarterly review, Lattice review, writing reviews for colleagues, or
-  filling in performance review forms. This skill guides the user through reviewing
-  each incomplete candidate by interviewing them about each topic, then polishes their
-  raw thoughts into professional review comments, and presents a final summary.
-  Trigger on: "peer review", "quarterly review", "lattice review",
-  "help me write reviews", "fill in my peer reviews", "performance review".
+description: Write quarterly Lattice peer reviews by interviewing the user about each candidate.
+disable-model-invocation: true
 ---
 
 # Peer Review Skill

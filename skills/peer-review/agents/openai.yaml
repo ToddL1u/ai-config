@@ -1,0 +1,6 @@
+interface:
+  display_name: "Peer Review"
+  short_description: "Write quarterly Lattice peer reviews"
+  default_prompt: "Use $peer-review to write quarterly Lattice peer reviews."
+policy:
+  allow_implicit_invocation: false

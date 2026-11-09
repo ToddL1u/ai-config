@@ -1,6 +1,7 @@
 ---
 name: english-learn
-description: Analyze any English content URL (YouTube, BBC, articles, podcasts) for CEFR-level vocabulary and phrases, then save to Notion. Triggers on "english learn", "analyze english", "learn english from", "english vocab from".
+description: Analyze an English content URL for CEFR-level vocabulary and phrases, then save them to Notion.
+disable-model-invocation: true
 ---
 
 # English Learn

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Caveman Compress"
+  short_description: "Compress an instruction file into caveman format"
+  default_prompt: "Use $caveman-compress to compress an instruction file into caveman format."
+policy:
+  allow_implicit_invocation: false

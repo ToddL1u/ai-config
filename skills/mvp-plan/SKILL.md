@@ -1,6 +1,7 @@
 ---
 name: mvp-plan
-description: Use when the user wants to turn an idea into an MVP plan, design an AI-powered product, scope a side project, evaluate whether to use AI for a feature, or plan a product build. Triggers on "MVP", "product idea", "build plan", "AI product", "scope this idea".
+description: Turn an idea into a scoped MVP plan, including whether AI belongs in it.
+disable-model-invocation: true
 ---
 
 # MVP Plan

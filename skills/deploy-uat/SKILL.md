@@ -1,6 +1,7 @@
 ---
 name: deploy-uat
-description: Deploy an allowed frontend repository and country set to UAT through Jenkins with explicit confirmation, strict input validation, bounded queue/build polling, and a final status report. Use when the user explicitly asks to deploy a supported frontend repository to UAT.
+description: Deploy an allowed frontend repository and country set to UAT through Jenkins, with explicit confirmation.
+disable-model-invocation: true
 ---
 
 # Deploy UAT

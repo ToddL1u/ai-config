@@ -1,6 +1,7 @@
 ---
 name: notion-add
-description: Use when the user wants to add content to Notion, create a new page in a database, update an existing page, or perform any Notion write action. Triggers on "add to notion", "create page in", "update notion", "add to my wiki", "save to notion".
+description: Create or update a Notion page or database entry.
+disable-model-invocation: true
 ---
 
 # Notion Add

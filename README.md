@@ -71,9 +71,16 @@ mutable-state writes.
 2. Keep instructions agent-neutral. Refer to available capabilities such as a
    browser, Jira, Notion, planning, or subagents; do not hardcode a vendor tool
    namespace.
-3. Add optional `scripts/`, `references/`, `assets/`, or `agents/` inside the
+3. Choose how the skill is invoked. Keep it model-invoked only when the agent
+   must start it on its own or another skill calls it. Otherwise make it
+   user-invoked: add `disable-model-invocation: true` to the frontmatter, write
+   the `description` as a one-line summary for humans, and set
+   `policy.allow_implicit_invocation: false` in `agents/openai.yaml`.
+   `./scripts/check.sh` fails when the two disagree. A user-invoked skill may
+   call model-invoked skills, never another user-invoked one.
+4. Add optional `scripts/`, `references/`, `assets/`, or `agents/` inside the
    skill directory.
-4. Run `./scripts/check.sh`, then `./scripts/setup.sh --apply` to install the
+5. Run `./scripts/check.sh`, then `./scripts/setup.sh --apply` to install the
    new skill for both agents.
 
 ## Private per-worktree AI workflow

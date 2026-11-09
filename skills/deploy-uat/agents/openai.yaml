@@ -1,0 +1,6 @@
+interface:
+  display_name: "Deploy UAT"
+  short_description: "Deploy a frontend repository to UAT via Jenkins"
+  default_prompt: "Use $deploy-uat to deploy a frontend repository to UAT via Jenkins."
+policy:
+  allow_implicit_invocation: false

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Start Ticket"
+  short_description: "Create a ticket branch from a key and title"
+  default_prompt: "Use $start-ticket to create a ticket branch from a key and title."
+policy:
+  allow_implicit_invocation: false

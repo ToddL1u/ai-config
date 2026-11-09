@@ -1,0 +1,6 @@
+interface:
+  display_name: "Handover"
+  short_description: "Save or load a session handover brief"
+  default_prompt: "Use $handover to save or load a session handover brief."
+policy:
+  allow_implicit_invocation: false

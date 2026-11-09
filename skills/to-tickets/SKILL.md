@@ -1,6 +1,7 @@
 ---
 name: to-tickets
-description: Break one named, approved specification into dependency-aware tracer-bullet tickets, preview the complete ticket graph, and publish it idempotently to one approved destination. Use only when the user explicitly invokes to-tickets or asks to turn an approved spec into executable tickets.
+description: Break one approved specification into dependency-aware tracer-bullet tickets and publish them.
+disable-model-invocation: true
 ---
 
 # To Tickets

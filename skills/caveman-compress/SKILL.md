@@ -1,10 +1,7 @@
 ---
 name: caveman-compress
-description: >
-  Compress natural language instruction and memory files into caveman format
-  to save input tokens. Preserves all technical substance, code, URLs, and structure.
-  Compressed version overwrites the original file. Human-readable backup saved as FILE.original.md.
-  Trigger when the user supplies a path and asks to compress a memory or instruction file.
+description: Compress a memory or instruction file into caveman format, keeping a human-readable backup.
+disable-model-invocation: true
 ---
 
 # Caveman Compress

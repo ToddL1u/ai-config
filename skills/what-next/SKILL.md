@@ -1,6 +1,7 @@
 ---
 name: what-next
-description: Recommend the single next local engineering or software-delivery skill for the user's current situation without taking action. Use only when the user explicitly invokes what-next, asks which workflow or skill to use, asks what comes next, or requests the complete engineering workflow map.
+description: Recommend the single next skill for your current situation, without taking action.
+disable-model-invocation: true
 ---
 
 # What Next?

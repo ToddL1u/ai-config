@@ -1,6 +1,7 @@
 ---
 name: design-review
-description: Use when the user wants to practice system design, review an architecture, prepare for a technical interview, or discuss scalability trade-offs. Triggers on "system design", "design review", "architecture review", "interview practice", "design a system".
+description: Practice system design or review an architecture and its scalability trade-offs.
+disable-model-invocation: true
 ---
 
 # Design Review

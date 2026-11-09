@@ -1,0 +1,6 @@
+interface:
+  display_name: "Checkpoint"
+  short_description: "Save, restore, or list work checkpoints"
+  default_prompt: "Use $checkpoint to save, restore, or list work checkpoints."
+policy:
+  allow_implicit_invocation: false

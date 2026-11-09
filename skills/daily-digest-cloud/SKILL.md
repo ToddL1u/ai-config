@@ -1,6 +1,7 @@
 ---
 name: daily-digest-cloud
-description: Build and publish a Traditional Chinese Daily Digest using the cloud-accessible Notion source list and Daily Digest database. Use for scheduled or manual Daily Digest runs, catch-up runs, source discovery, duplicate-safe Notion publishing, and maintenance of the digest workflow when local files or scripts are unavailable.
+description: Build and publish the Traditional Chinese Daily Digest from the Notion source list.
+disable-model-invocation: true
 ---
 
 # Daily Digest Cloud

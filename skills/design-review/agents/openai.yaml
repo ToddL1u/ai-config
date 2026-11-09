@@ -1,0 +1,6 @@
+interface:
+  display_name: "Design Review"
+  short_description: "Practice system design or review an architecture"
+  default_prompt: "Use $design-review to practice system design or review an architecture."
+policy:
+  allow_implicit_invocation: false

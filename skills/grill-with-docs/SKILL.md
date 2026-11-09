@@ -1,6 +1,7 @@
 ---
 name: grill-with-docs
-description: Start an explicit grilling session that stress-tests a plan against the repository's domain language and records confirmed glossary or architecture decisions incrementally. Use only when the user invokes grill-with-docs or directly asks for a grilling session that maintains domain documentation.
+description: Grill a plan against the domain language and record confirmed glossary and architecture decisions.
+disable-model-invocation: true
 ---
 
 # Grill With Docs

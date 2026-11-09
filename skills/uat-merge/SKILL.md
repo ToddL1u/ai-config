@@ -1,6 +1,7 @@
 ---
 name: uat-merge
-description: Safely merge a feature branch into UAT with explicit conflict decisions, a merge commit, confirmed push, restoration of the original branch and worktree, and optional deployment. Use when the user asks to merge into UAT or run a UAT merge.
+description: Merge a feature branch into UAT with explicit conflict decisions, a confirmed push, and restoration of the original branch.
+disable-model-invocation: true
 ---
 
 # UAT Merge
@@ -124,9 +125,10 @@ Never restore a feature-branch stash while checked out on `uat`.
 
 ### 9. Offer deployment
 
-After a successful push and successful cleanup, offer to invoke `deploy-uat`
-with the detected repository and explicit country selection. Deployment is a
-separate external action and still requires its own confirmation.
+After a successful push and successful cleanup, tell the user they can run
+`/deploy-uat` next, naming the detected repository and asking for an explicit
+country selection. Do not start deployment from this skill: it is a separate
+external action that the user starts and confirms.
 
 ## Safety invariants
 

@@ -1,6 +1,7 @@
 ---
 name: start-ticket
-description: Safely create and switch to a categorized ticket branch from the repository's up-to-date default branch. Use when the user provides a ticket key and title and wants a ready development branch without fetching or validating Jira.
+description: Create and switch to a categorized ticket branch from a ticket key and title.
+disable-model-invocation: true
 ---
 
 # Start Ticket

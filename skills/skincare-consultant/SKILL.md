@@ -1,6 +1,7 @@
 ---
 name: skincare-consultant
-description: Evaluate skincare products and routines against a user's skin profile and owned-product inventory. Use when an AI agent needs to review a product URL, name, packaging photo, or ingredient list; identify ingredient or function overlap; assess routine fit and irritation risk; onboard or update a skin profile; audit a skincare inventory; plan a routine; or optionally preview and sync skincare records with Notion.
+description: Evaluate skincare products and routines against a skin profile and owned-product inventory.
+disable-model-invocation: true
 ---
 
 # Skincare Consultant

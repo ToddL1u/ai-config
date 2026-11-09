@@ -1,0 +1,6 @@
+interface:
+  display_name: "UAT Merge"
+  short_description: "Merge a feature branch into UAT safely"
+  default_prompt: "Use $uat-merge to merge a feature branch into UAT safely."
+policy:
+  allow_implicit_invocation: false

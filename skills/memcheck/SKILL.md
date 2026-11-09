@@ -1,6 +1,7 @@
 ---
 name: memcheck
-description: "Check macOS memory and CPU usage, identify heavy processes, and interactively kill them. Triggers on: memcheck, check memory, memory usage, what's using memory, kill process, memory lag."
+description: Check macOS memory and CPU usage, identify heavy processes, and interactively kill them.
+disable-model-invocation: true
 ---
 
 # memcheck — Memory Monitor & Process Killer

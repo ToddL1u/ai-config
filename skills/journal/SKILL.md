@@ -1,6 +1,7 @@
 ---
 name: journal
-description: Generate a dated project journal entry from git history and optional user notes. Use when the user asks to record work, create a development journal, or summarize a branch session.
+description: Generate a dated project journal entry from git history and optional notes.
+disable-model-invocation: true
 ---
 
 # Journal Skill

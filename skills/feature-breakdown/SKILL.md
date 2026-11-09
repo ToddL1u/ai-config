@@ -1,6 +1,7 @@
 ---
 name: feature-breakdown
-description: Split one large product feature into a private, dependency-aware Epic and user-observable vertical-slice cards before implementation. Use when a feature is too large for one dev-flow, needs mock-first boundaries, or has incomplete PRD or Figma decisions; use also when changing a feature that already owns a board under .ai/boards/, to reconcile that board with the current code before planning the change. Use after grilling resolves material product choices and before dev-flow implements a card.
+description: Split one large feature into a private Epic and dependency-aware vertical-slice cards, or reconcile an existing board.
+disable-model-invocation: true
 ---
 
 # Feature Breakdown

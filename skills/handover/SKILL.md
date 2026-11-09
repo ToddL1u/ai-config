@@ -1,6 +1,7 @@
 ---
 name: handover
-description: "Generate or load a structured session handover brief so work can resume in a fresh session without context loss. Use for handover, hand over, save context, or resume session requests."
+description: Save a structured session handover brief, or resume from one.
+disable-model-invocation: true
 ---
 
 # Handover Skill

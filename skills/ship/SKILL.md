@@ -1,6 +1,7 @@
 ---
 name: ship
-description: "Ship the current feature branch to GitHub: lint, then push. Never merges, never switches branches, never creates a PR. Triggers on: ship, ship it, ship the branch, push the branch."
+description: Lint and push the current feature branch; never merges, switches branches, or opens a PR.
+disable-model-invocation: true
 ---
 
 # Ship — lint and push, nothing else

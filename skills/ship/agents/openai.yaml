@@ -1,0 +1,6 @@
+interface:
+  display_name: "Ship"
+  short_description: "Lint and push the current feature branch"
+  default_prompt: "Use $ship to lint and push the current feature branch."
+policy:
+  allow_implicit_invocation: false
