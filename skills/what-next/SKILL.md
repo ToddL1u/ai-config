@@ -30,10 +30,11 @@ Prefer these routes:
 - Resolved requirements (approved spec, PRD and Figma, ticket, or settled
   discussion) that need vertical slices, or a feature board that must be synced
   with the code → `to-tickets`.
-- Feature board with several Ready cards to build in parallel →
+- Board card, approved single-slice spec, or resolved change ready to build →
+  `dev-flow`. It is the single implementation entry point: when the board has
+  several independent Ready cards, it offers `implement-board` before editing.
+- Several independent Ready cards the user already wants built in parallel →
   `implement-board`.
-- Selected board card, approved single-slice spec, or resolved change small
-  enough for one implementation flow → `dev-flow`.
 - Approved Jira ticket without a prepared ticket branch → `start-ticket`.
 - Approved ticket on its prepared branch → `dev-flow`.
 - Hard, intermittent, or poorly reproduced defect → `debug`.
@@ -42,18 +43,23 @@ Prefer these routes:
 - Running web application needs visual, interaction, console, responsive, or
   accessibility verification → `qa-browser`.
 - Implemented work needs an independent pre-landing review → `review-sweep`.
+- Reviewed work that should also get a second model's opinion →
+  `codex-review`.
 - Uncommitted work needs logical, user-approved commits → `commit-chunk`.
-- Finished, committed feature branch needs tests, review, changelog, and PR →
-  `ship`.
+- Clean, committed feature branch ready to lint and push → `ship`.
 - Only a PR description or PR creation is requested → `pr`.
 - Feature branch must merge into UAT → `uat-merge`.
 - Supported frontend repository must deploy to UAT → `deploy-uat`.
 - Save session context, or resume from a saved brief → `handover`.
 - Finished session whose friction should improve skills or setup → `retro`.
+- Record the day's work as a dated journal entry → `journal`.
+- Write or edit a skill, `AGENTS.md`, or `CLAUDE.md` → `writing-for-agents`.
+- System design practice or an architecture trade-off review →
+  `design-review`.
 
-Do not recommend internal coordination or review skills such as
-`parallel-work`, `spec-review`, or `standards-review`; their controlling
-workflows own them. Do not route to unrelated personal utilities.
+Do not recommend skills that other skills call: `parallel-work`,
+`test-impact`, `grilling`, `spec-review`, and `standards-review`; their
+controlling workflows own them. Do not route to unrelated personal utilities.
 
 ## Main flow
 
@@ -66,9 +72,9 @@ grill-with-docs → to-spec → to-tickets → dev-flow → review-sweep → shi
 Skip `to-spec` when a PRD and Figma or an approved ticket already define the
 requirements. Run `start-ticket` before `dev-flow` on a Jira ticket.
 `review-sweep` runs inside `dev-flow`. Around `ship`: `commit-chunk` before it,
-`uat-merge` and `deploy-uat` after it where UAT applies. For several Ready
-cards, `implement-board` runs `dev-flow` workers in parallel in place of the
-`dev-flow` step.
+`uat-merge` and `deploy-uat` after it where UAT applies. Always enter
+implementation through `dev-flow`; with several independent Ready cards it
+offers `implement-board`, which runs `dev-flow` workers in parallel.
 
 For a small resolved change, go directly to `dev-flow`. For a hard bug, enter
 through `debug`; for understanding only, enter through `understand-feature`.

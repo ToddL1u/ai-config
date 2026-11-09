@@ -47,9 +47,10 @@ grill-with-docs → to-spec → to-tickets → dev-flow → review-sweep → shi
   `.ai/boards/<feature>.md` and selects one into `.ai/current-card.md`.
   It publishes to Jira or GitHub only on request.
 - `dev-flow` implements the current card, test-first through `tdd`. On a Jira
-  ticket, run `start-ticket` first. When the board has several Ready cards,
-  `implement-board` runs one `dev-flow` worker per card in parallel worktrees
-  and merges each into the current branch.
+  ticket, run `start-ticket` first. It is the single implementation entry
+  point: when the board has several independent Ready cards, it stops and
+  offers `implement-board`, which runs one `dev-flow` worker per card in
+  parallel worktrees and merges each into the current branch.
 - `review-sweep` runs inside `dev-flow`; add `codex-review` for a second model.
 - `ship` pushes the branch: `commit-chunk` before it, then `uat-merge` and
   `deploy-uat` where UAT applies.
@@ -144,12 +145,14 @@ Read-only investigations enter at `understand-feature`.
 - **Prompt:** `Use dev-flow. Implement the approved ticket SPF-482 from its current branch.`
 - **Note:** This is the default implementation workflow. It composes
   `test-impact`, `tdd`, and `review-sweep` when appropriate. It also takes the
-  current board card from `.ai/current-card.md`.
+  current board card from `.ai/current-card.md`, and offers `implement-board`
+  when several independent cards are Ready.
 
 ### `implement-board`
 
-- **Use when:** A feature board has several Ready cards and you want them
-  built in parallel on the current feature branch.
+- **Use when:** A feature board has several independent Ready cards and you
+  want them built in parallel on the current feature branch. `dev-flow`
+  suggests it when this applies.
 - **Prompt:** `/implement-board checkout-reminders 2`
 - **Note:** One fresh worker per card runs `dev-flow` in its own worktree (an
   Orca pane when inside Orca); finished cards merge with `--no-ff`, failed ones
@@ -228,9 +231,10 @@ Read-only investigations enter at `understand-feature`.
 
 ### `ship`
 
-- **Use when:** A finished, committed feature branch should run tests and
-  review, update the changelog when applicable, and create a PR.
-- **Prompt:** `/ship Take this completed feature branch to a ready pull request.`
+- **Use when:** A finished, committed feature branch should be linted and
+  pushed. It never merges, switches branches, or opens a PR; use `pr` for the
+  PR.
+- **Prompt:** `/ship Push this completed feature branch.`
 
 ### `uat-merge`
 
@@ -356,12 +360,13 @@ Read-only investigations enter at `understand-feature`.
 - Requirements that need slicing, or a stale feature board → `to-tickets`
 - Approved Jira ticket, no branch → `start-ticket`
 - Ready to implement → `dev-flow`
-- Several Ready cards on a board → `implement-board`
+- Several independent Ready cards → `implement-board` (`dev-flow` offers it)
 - Hard unreproduced bug → `debug`
 - Need to understand only → `understand-feature`
 - Need browser evidence → `qa-browser`
 - Implementation needs review → `review-sweep`
 - Completed changes need commits → `commit-chunk`
-- Clean completed branch needs a PR → `ship`
+- Clean completed branch needs pushing → `ship`
+- PR description or PR creation → `pr`
 - Need a fresh session → `handover`
 - Session done, improve the setup → `retro`
