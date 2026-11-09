@@ -37,17 +37,23 @@ with `/name`. The other skills also start from plain words, such as
 ## Main engineering flow
 
 ```text
-unclear repository change
-  → grill-with-docs
-  → feature-breakdown          when the feature has dependent vertical slices
-  → executor-handoff           when another agent will implement a Ready card
-  → to-spec                    when a shared approved specification is needed
-  → to-tickets                 when approved tracker tickets are needed
-  → start-ticket               when starting an approved Jira ticket
-  → dev-flow
-  → commit-chunk               when completed changes are uncommitted
-  → ship
+grill-with-docs → to-spec → to-tickets → dev-flow → review-sweep → ship → retro
 ```
+
+- `grill-with-docs` aligns on the change; use `grill-me` for non-code plans.
+- `to-spec` writes the requirements. Skip it when a PRD and Figma, or an
+  approved ticket, already define them.
+- `to-tickets` breaks the requirements into vertical-slice cards on the private
+  `.ai/boards/<feature>.md` and selects one into `.ai/current-card.md`.
+  It publishes to Jira or GitHub only on request.
+- `dev-flow` implements the current card, test-first through `tdd`. On a Jira
+  ticket, run `start-ticket` first.
+- `review-sweep` runs inside `dev-flow`; add `codex-review` for a second model.
+- `ship` pushes the branch: `commit-chunk` before it, then `uat-merge` and
+  `deploy-uat` where UAT applies.
+- `retro` turns the session's friction into skill and setup improvements.
+
+`dev-flow` builds one card per run; implement Ready cards one at a time.
 
 Small, resolved changes can enter at `dev-flow`. Hard bugs enter at `debug`.
 Read-only investigations enter at `understand-feature`.
@@ -109,20 +115,17 @@ Read-only investigations enter at `understand-feature`.
 
 ### `to-tickets`
 
-- **Use when:** One approved specification needs dependency-aware,
-  independently verifiable implementation tickets.
-- **Prompt:** `/to-tickets Split docs/reminder-spec.md into tracer-bullet Jira tickets.`
-
-### `feature-breakdown`
-
-- **Use when:** A large feature has incomplete PRD or Figma decisions, multiple
-  user-observable slices, or dependencies that make one `dev-flow` too broad.
-- **Prompt:** `/feature-breakdown Map this Figma and PRD into private, dependency-aware vertical slices.`
-- **Note:** It creates private `.ai/boards/<feature>.md` and `.ai/current-card.md`; it does not implement or create tracker tickets.
+- **Use when:** Resolved requirements (an approved spec, a PRD and Figma, a
+  ticket, or a settled discussion) need dependency-aware vertical slices, or an
+  existing feature board needs to be synced with the code before new work.
+- **Prompt:** `/to-tickets checkout-reminders Break the linked PRD and Figma frame into vertical-slice cards.`
+- **Note:** It writes the private `.ai/boards/<feature>.md` and
+  `.ai/current-card.md`. It publishes tickets to Jira or GitHub only when you
+  name a destination, after a preview you approve.
 
 ### `executor-handoff`
 
-- **Use when:** One `feature-breakdown` card is Ready and another agent should
+- **Use when:** One `to-tickets` card is Ready and another agent should
   implement it from the original PRD and Figma sources.
 - **Prompt:** `/executor-handoff Create a handoff for C2 for Claude Code using the linked PRD and Figma frame.`
 - **Note:** It creates a source-pinned private brief and stops before implementation.
@@ -269,6 +272,15 @@ Read-only investigations enter at `understand-feature`.
   history and optional notes.
 - **Prompt:** `/journal Record today's work and note that the API contract is still blocked.`
 
+### `retro`
+
+- **Use when:** A session is done and its friction (slow navigation, missed
+  checks, wasted tool calls) should become skill, instruction, or tooling
+  improvements.
+- **Prompt:** `/retro Review this session.`
+- **Note:** It suggests improvements, most severe first, and changes nothing
+  until you pick one.
+
 ## Communication, knowledge, and personal workflows
 
 ### `caveman`
@@ -343,10 +355,9 @@ Read-only investigations enter at `understand-feature`.
 
 - Unsure where to begin → `what-next`
 - Unclear repository idea → `grill-with-docs`
-- Large private feature with dependent slices → `feature-breakdown`
+- Resolved idea with no written requirements → `to-spec`
+- Requirements that need slicing, or a stale feature board → `to-tickets`
 - Ready card for another agent → `executor-handoff`
-- Resolved multi-session work → `to-spec`
-- Approved multi-slice spec → `to-tickets`
 - Approved Jira ticket, no branch → `start-ticket`
 - Ready to implement → `dev-flow`
 - Hard unreproduced bug → `debug`
@@ -356,3 +367,4 @@ Read-only investigations enter at `understand-feature`.
 - Completed changes need commits → `commit-chunk`
 - Clean completed branch needs a PR → `ship`
 - Need a fresh session → `handover`
+- Session done, improve the setup → `retro`

@@ -25,14 +25,15 @@ Prefer these routes:
   `grill-with-docs`.
 - Terminology, domain boundaries, glossary, or ADR problem specifically →
   `domain-modeling`.
-- Resolved large feature with dependent vertical slices, incomplete PRD or Figma
-  decisions, or private worktree planning needs → `feature-breakdown`.
-- Ready feature card that another agent will implement from PRD and design
+- Resolved idea with no written requirements (no PRD, spec, or ticket) →
+  `to-spec`.
+- Resolved requirements (approved spec, PRD and Figma, ticket, or settled
+  discussion) that need vertical slices, or a feature board that must be synced
+  with the code → `to-tickets`.
+- Ready board card that another agent will implement from PRD and design
   sources → `executor-handoff`.
-- Resolved feature small enough for one implementation flow → `dev-flow`.
-- Resolved multi-session feature without an approved spec → `to-spec`.
-- Approved multi-slice spec → `to-tickets`.
-- Approved single-slice spec → `dev-flow`.
+- Selected board card, approved single-slice spec, or resolved change small
+  enough for one implementation flow → `dev-flow`.
 - Approved Jira ticket without a prepared ticket branch → `start-ticket`.
 - Approved ticket on its prepared branch → `dev-flow`.
 - Hard, intermittent, or poorly reproduced defect → `debug`.
@@ -49,6 +50,7 @@ Prefer these routes:
 - Supported frontend repository must deploy to UAT → `deploy-uat`.
 - Save a lightweight resumable project snapshot → `checkpoint`.
 - Transfer dense context into a fresh session → `handover`.
+- Finished session whose friction should improve skills or setup → `retro`.
 
 Do not recommend internal coordination or review skills such as
 `parallel-work`, `spec-review`, or `standards-review`; their controlling
@@ -59,21 +61,17 @@ workflows own them. Do not route to unrelated personal utilities.
 Use this as orientation, not an automatic pipeline:
 
 ```text
-unclear repository change
-  → grill-with-docs
-  → feature-breakdown          when private vertical-slice planning is needed
-  → executor-handoff           when another agent will implement a Ready card
-  → to-spec                    when a shared approved specification is needed
-  → to-tickets                 when approved tracker tickets are needed
-  → start-ticket               when starting an approved Jira ticket
-  → dev-flow
-  → ship
+grill-with-docs → to-spec → to-tickets → dev-flow → review-sweep → ship → retro
 ```
 
-For a small resolved change, go directly to `dev-flow`. It already composes TDD
-and final review. For a large private feature, use `feature-breakdown` after
-material decisions are resolved. For a hard bug, enter through `debug`; for
-understanding only, enter through `understand-feature`.
+Skip `to-spec` when a PRD and Figma or an approved ticket already define the
+requirements. Run `start-ticket` before `dev-flow` on a Jira ticket.
+`review-sweep` runs inside `dev-flow`. Around `ship`: `commit-chunk` before it,
+`uat-merge` and `deploy-uat` after it where UAT applies. `dev-flow` builds one
+card per run.
+
+For a small resolved change, go directly to `dev-flow`. For a hard bug, enter
+through `debug`; for understanding only, enter through `understand-feature`.
 
 ## Respond
 

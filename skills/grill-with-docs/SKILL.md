@@ -24,8 +24,9 @@ Return a concise **Feature Start Brief** containing:
 - material decisions requiring user confirmation;
 - the smallest independently verifiable vertical slice;
 - acceptance and verification criteria;
-- recommended next route: `dev-flow` for one resolved slice, or
-  `feature-breakdown` for a large or dependent feature.
+- recommended next route: `dev-flow` for one resolved slice, `to-tickets`
+  for a large or dependent feature, or `to-spec` first when no PRD, spec, or
+  ticket defines the requirements.
 
 Treat a decision as material only when it could change user behavior, scope,
 authorization, data interpretation, an external contract, acceptance criteria,
