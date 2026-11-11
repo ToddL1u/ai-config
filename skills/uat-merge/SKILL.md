@@ -1,6 +1,6 @@
 ---
 name: uat-merge
-description: Merge a feature branch into UAT with explicit conflict decisions, a confirmed push, and restoration of the original branch.
+description: Merge a feature branch into UAT with explicit conflict decisions, a verified build, a confirmed push, and restoration of the original branch.
 disable-model-invocation: true
 ---
 
@@ -101,16 +101,36 @@ Conflicts resolved:
 Omit the conflict section when there were none. Verify the resulting commit has
 two parents before proceeding.
 
-### 7. Confirm and push
+### 7. Verify the build
 
-Show the source, destination, merge commit, and conflict summary. Ask for
-confirmation, then run `git push origin uat`.
+Build the merged `uat` tree before pushing. Use the repository's `build`
+script from `package.json`, run in the directory where `uat` is checked out.
+
+- When the script starts with a clean step that recursively deletes
+  directories (such as `rimraf ./build`), run the remaining command directly
+  and skip the clean: bulk deletion is reserved for the user.
+- Run it in the background and log to the scratchpad. The process keeps
+  running after compiling, so read the log instead of waiting for an exit.
+- The build is **green** when every compilation has finished (in `fe-web-mvc`:
+  both `sw-rspack` and `main-wap` reach 100%, one `compiled` line each) and the
+  log contains no `ERROR in` block. Warnings, including `Error:` lines inside
+  `WARNING in` blocks, do not fail it.
+- Once green, stop the build process; the non-zero exit from stopping it is
+  expected.
+
+When the build fails, keep the merge commit local, report the errors with
+their files, and ask the user how to proceed. Push only a green build.
+
+### 8. Confirm and push
+
+Show the source, destination, merge commit, conflict summary, and build result.
+Ask for confirmation, then run `git push origin uat`.
 
 If the push is rejected because `origin/uat` advanced, do not automatically
 rebase, reset, force-push, or retry. Report that local `uat` retains the merge
 commit and must be reconciled with the new remote state. Then perform cleanup.
 
-### 8. Restore the original context
+### 9. Restore the original context
 
 After a successful push—or before stopping after any recoverable failure:
 
@@ -123,7 +143,7 @@ After a successful push—or before stopping after any recoverable failure:
 
 Never restore a feature-branch stash while checked out on `uat`.
 
-### 9. Offer deployment
+### 10. Offer deployment
 
 After a successful push and successful cleanup, tell the user they can run
 `/deploy-uat` next, naming the detected repository and asking for an explicit
