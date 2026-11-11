@@ -40,7 +40,7 @@ with `/name`. The other skills also start from plain words, such as
 grill-with-docs → to-spec → to-tickets → dev-flow → review-sweep → ship → retro
 ```
 
-- `grill-with-docs` aligns on the change; use `grill-me` for non-code plans.
+- `grill-with-docs` aligns on the change; use `grilling` for non-code plans.
 - `to-spec` writes the requirements. Skip it when a PRD and Figma, or an
   approved ticket, already define them.
 - `to-tickets` breaks the requirements into vertical-slice cards on the private
@@ -74,12 +74,6 @@ Read-only investigations enter at `understand-feature`.
   value and scope still need evaluation.
 - **Prompt:** `/mvp-plan Scope an MVP for an AI assistant that summarizes customer calls.`
 
-### `grill-me`
-
-- **Use when:** You want a one-question-at-a-time stress test of a non-code plan
-  or design.
-- **Prompt:** `/grill-me Grill my plan for launching a paid newsletter.`
-
 ### `grill-with-docs`
 
 - **Use when:** A repository change is still ambiguous and confirmed domain or
@@ -88,10 +82,10 @@ Read-only investigations enter at `understand-feature`.
 
 ### `grilling`
 
-- **Use when:** Another workflow needs the reusable one-decision-at-a-time
-  interview discipline.
-- **Prompt:** `Use grilling to challenge this migration plan one decision at a time.`
-- **Note:** Usually composed by `grill-me` or `grill-with-docs`.
+- **Use when:** You want a one-question-at-a-time stress test of a plan or
+  design, code or not.
+- **Prompt:** `/grilling Grill my plan for launching a paid newsletter.`
+- **Note:** Also composed by `grill-with-docs`.
 
 ### `domain-modeling`
 
