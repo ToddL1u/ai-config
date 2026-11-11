@@ -1,0 +1,1 @@
+{ "name": "activity-bar", "version": "0.1.0", "description": "Status line showing whether Claude is working, waiting on you, idle, or stalled" }
