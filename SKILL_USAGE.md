@@ -179,7 +179,9 @@ Read-only investigations enter at `understand-feature`.
 - **Use when:** A running web application needs visual, interaction,
   responsive, console, or accessibility verification.
 - **Prompt:** `Use qa-browser. Verify the checkout page at http://localhost:3000 on desktop and mobile.`
-- **Note:** Review is read-only unless you explicitly request fix mode.
+- **Note:** Review is read-only unless you explicitly request fix mode. Mobile
+  checks also render in WebKit (iPhone profile) and end with a list of steps to
+  confirm on a real iPhone.
 
 ### `review-sweep`
 

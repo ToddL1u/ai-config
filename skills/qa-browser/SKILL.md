@@ -1,6 +1,6 @@
 ---
 name: qa-browser
-description: Verify a running web application through browser automation, including layout, interactions, accessibility, console errors, and responsive behavior. Use for browser QA, visual QA, browser tests, or requests to verify an app in a browser. Report without editing by default; fix and re-verify only when the user explicitly requests fix mode.
+description: Verify a running web application through browser automation, including layout, interactions, accessibility, console errors, responsive behavior, and iOS Safari rendering through WebKit. Use for browser QA, visual QA, browser tests, or requests to verify an app in a browser. Report without editing by default; fix and re-verify only when the user explicitly requests fix mode.
 ---
 
 # QA Browser
@@ -80,6 +80,27 @@ Use project breakpoints when known. Otherwise use only relevant defaults:
 
 Do not claim a breakpoint passed unless it was actually inspected.
 
+### 6. Check WebKit when mobile is in scope
+
+Chrome at a mobile width does not render like iOS Safari. When mobile is in
+scope and Playwright is available, also render the page in WebKit with an
+iPhone profile, using the project's Playwright when it has one:
+
+```bash
+npx playwright screenshot --browser webkit --device "iPhone 13" --full-page <url> <out.png>
+```
+
+If the engine is missing, run `npx playwright install webkit` once. For
+interactions, drive the same profile from a short Playwright script
+(`webkit.launch()` with `devices['iPhone 13']`). Compare against the Chrome
+mobile screenshot and report the differences.
+
+This is a current WebKit, not the iOS version the project supports, and it has
+no iOS browser chrome. List under "Needs device check" what it cannot show:
+the collapsing address bar, the on-screen keyboard, real safe-area insets, zoom
+on input focus, and CSS newer than the project's oldest supported iOS. If
+WebKit is unavailable, say so; Chrome at a mobile width is not iOS coverage.
+
 ## Report
 
 Include:
@@ -90,9 +111,13 @@ Include:
 - URL: ...
 - Mode: QA / Fix
 - Viewports: ...
+- Engines: Chromium / WebKit (iPhone profile) / not run, with reason
 
 ### Findings
 - [severity] [evidence] Issue → recommended fix
+
+### Needs device check
+- [mobile only] What WebKit emulation cannot show, as concrete steps on a real iPhone
 
 ### Fixed and verified
 - [fix mode only] Issue → fix → verification evidence
