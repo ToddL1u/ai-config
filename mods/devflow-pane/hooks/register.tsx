@@ -48,21 +48,21 @@ function statusLine(found: Progress): string | undefined {
   }
   if (s.next !== null) parts.push(`Next: ${s.next}`)
 
-  return `${parts.join(' · ')} · /devflow to expand`
+  return `${parts.join(' · ')} · /devflow-pane to expand`
 }
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    await $.command.register({ name: 'devflow', description: 'Expand or collapse the dev-flow progress pane' })
+    await $.command.register({ name: 'devflow-pane', description: 'Expand or collapse the dev-flow progress pane' })
     const started = await next(e)
-    // Starts collapsed: the status line carries the summary until /devflow.
+    // Starts collapsed: the status line carries the summary until /devflow-pane.
     await refresh($).catch(() => null)
 
     return started
   })
 
   // Toggles between the pane and the collapsed status line.
-  on('command.run', { command: 'devflow' }, async $ => {
+  on('command.run', { command: 'devflow-pane' }, async $ => {
     const isUp = (await $.ui.panes()).some(pane => pane.id === PANE)
     if (isUp) {
       await $.ui.close({ id: PANE })

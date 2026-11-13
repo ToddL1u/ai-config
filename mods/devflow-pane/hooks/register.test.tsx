@@ -53,7 +53,7 @@ function engine(on: On, file: string | null, branch = 'main'): Seen {
     const { Box } = $.ui.resolve(e)
     return <Box />
   })
-  on('command.register', () => ({ value: { command: 'devflow' } }))
+  on('command.register', () => ({ value: { command: 'devflow-pane' } }))
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('session.cwd', () => ({ value: '/repo/app' }))
   on('process.run', (_, e) => {
@@ -73,7 +73,7 @@ function engine(on: On, file: string | null, branch = 'main'): Seen {
 }
 
 const run = ($: Parameters<TestBody>[0]) =>
-  $.command.run({ command: 'devflow', args: '', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 160 } })
+  $.command.run({ command: 'devflow-pane', args: '', origin: { kind: 'composer' }, presentation: { isFullscreen: false, columns: 160 } })
 const start = ($: Parameters<TestBody>[0]) =>
   $.session.start({ cwd: '/repo/app', surface: 'terminal', isInteractive: true })
 
@@ -97,10 +97,10 @@ test('starts collapsed: a status line, no pane', async ($, on) => {
   const seen = engine(on, TEMPLATE)
   await start($)
   expect(seen.opened).toEqual([])
-  expect(seen.status.at(-1)).toBe('dev-flow · IN_PROGRESS · 1/2 criteria · Next: Write the remove test · /devflow to expand')
+  expect(seen.status.at(-1)).toBe('dev-flow · IN_PROGRESS · 1/2 criteria · Next: Write the remove test · /devflow-pane to expand')
 })
 
-test('/devflow expands the pane, then collapses it', async ($, on) => {
+test('/devflow-pane expands the pane, then collapses it', async ($, on) => {
   const seen = engine(on, TEMPLATE)
   await start($)
 
@@ -116,7 +116,7 @@ test('/devflow expands the pane, then collapses it', async ($, on) => {
   expect(seen.status.at(-1)).toMatch(/IN_PROGRESS/)
 })
 
-test('no file: no status line; /devflow says so', async ($, on) => {
+test('no file: no status line; /devflow-pane says so', async ($, on) => {
   const seen = engine(on, null)
   await start($)
   expect(seen.opened).toEqual([])
