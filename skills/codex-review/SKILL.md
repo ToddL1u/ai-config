@@ -52,15 +52,42 @@ Scope: <one of>
 
 Requirements (if any): <spec / ticket / acceptance criteria, or "none supplied">
 
-Read the surrounding code as needed. Focus on correctness, regressions, async
-and state races, error handling, security, data loss, and missing tests.
-Skip style nits.
+Trace the blast radius first: for every changed symbol, contract, and config
+value, search the repo for its callers, importers, and consumers, and check
+CODEOWNERS or other ownership files for who owns each touched and affected
+path. Then focus on correctness, regressions, async and state races, error
+handling, security, data loss, and missing tests. Skip style nits.
 
 Write the report in Traditional Chinese (繁體中文, zh-TW). Keep technical terms,
-code identifiers, file paths, the severity labels, and READY / NEEDS WORK in
-English.
+code identifiers, file paths, the severity and scope labels, YES / NO, and
+READY / NEEDS WORK in English.
 
 Report in this format:
+
+## Blast radius
+Scope: Local | Module | Cross-module | Cross-service — <one line of reasoning>
+Worst case: <the most damaging realistic failure if this ships with a defect:
+what breaks, who is hit, and whether it is reversible (rollback, data repair,
+or permanent loss)> — <file>:<line>
+- <changed item> — changed at <file>:<line> — reached by <callers, pages,
+  routes, jobs, or external consumers, each with file:line>, or "local only"
+Cover every changed exported symbol, API or route, DB schema or migration,
+event or message payload, env var, config key, feature flag, shared component
+or style token, and persisted data shape.
+
+## Side effects
+- <behavior that changes outside the diff: defaults, timing, network calls,
+  storage or cache writes, logging and analytics, permissions, migrations> —
+  <file>:<line> — <how to verify>
+
+## Cross-team review
+Needed: YES or NO — <one line of reasoning>
+- <owner from CODEOWNERS or package ownership, else "owner unknown"> — <shared
+  contract or owned area touched> — <file>
+Answer YES when the change touches code another team owns, or a contract
+other teams consume: shared API, DB schema, event payload, shared package or
+design-system component, auth, infra / CI / deploy config, analytics, or i18n
+keys. Name only owners the repo records.
 
 ## Findings
 - [Blocker|High|Medium|Low|Question] <issue and impact> — <file>:<line> — <how to verify>
@@ -68,11 +95,8 @@ Report in this format:
 ## Potential risks by file
 - <file>
   - [Severity] <risk> — <line(s)>
-List every file that carries a finding or a side effect to verify; one bullet
-per risk.
+List every file that carries a finding or a side effect; one bullet per risk.
 
-## Side effects to verify
-- <side effect> — <file>:<line>
 ## Questions / assumptions
 ## Tests to add or run
 
