@@ -9,6 +9,10 @@ Delete one explicitly named file path per command, such as `rm "/path/to/file.tx
 - Code, code comments, commit messages, and file contents follow the project's existing language (usually English), not this rule.
 - Text published for other people (PR descriptions, tickets, Notion pages, review comments) stays in English unless a skill says otherwise.
 
+## Code Search
+
+In a repository with a `.codegraph/` index, locate and trace code through codegraph before grep or file reads: the `codegraph_explore` tool when it is available, else the CLI. `codegraph explore <question or symbols>` answers how code works, `codegraph callers <symbol>` and `codegraph impact <symbol>` show what a change reaches, and `codegraph affected <files>` lists the tests it touches. Keep grep for text that is not code (copy, config keys, docs) and for repositories without an index.
+
 ## Coding Guidelines
 
 For non-trivial work; skip for trivial edits such as typo fixes.

@@ -24,7 +24,8 @@ categories relevant to the change.
 1. Classify concrete correctness, security, data, concurrency, LLM-boundary,
    broken-test, and material applicable repository-rule violations as blocking.
 2. Inspect surrounding consumers outside the diff when a changed public value,
-   enum, schema, or interface requires completeness checking.
+   enum, schema, or interface requires completeness checking; in an indexed
+   repository, list them with `codegraph callers` or `codegraph impact`.
 3. Treat maintainability, performance, accessibility, and code-smell findings
    as advisory unless there is evidence of a concrete defect or material
    repository-rule violation.

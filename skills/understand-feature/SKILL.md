@@ -13,7 +13,8 @@ read-only investigation directly.
 
 1. **Identify scope**: Ask the user for the feature name, starting file/route/keyword, or area of interest
 2. **Explore deeply**: Delegate to a code-exploration subagent when available,
-   or perform the analysis directly:
+   or perform the analysis directly, tracing through codegraph when the
+   repository is indexed:
    - Find entry points (routes, components, API handlers)
    - Trace execution flow from entry to output
    - Map state management and data transformations

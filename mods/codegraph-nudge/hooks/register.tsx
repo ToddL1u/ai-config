@@ -3,28 +3,74 @@ import type { EngineInterface, Register } from 'claude-code'
 
 import type { RepoIndex } from '../types'
 
-const repo = atom({ plugin: 'codegraph-nudge', key: 'repo' } as const, null)
+// `shape` declines a value stored before `seed` existed.
+const repo = atom({ plugin: 'codegraph-nudge', key: 'repo' } as const, null, { shape: 'repo-2' })
 const isHidden = atom({ plugin: 'codegraph-nudge', key: 'isHidden' } as const, false)
 
 const INIT_TIMEOUT_MS = 10 * 60 * 1000
 
+/** The main worktree's index for a linked worktree at `root`, or null. */
+async function seedFor($: EngineInterface, root: string): Promise<string | null> {
+  const common = await $.process
+    .run(['git', 'rev-parse', '--path-format=absolute', '--git-common-dir'], { cwd: root })
+    .catch(() => null)
+  if (common === null || common.exitCode !== 0) return null
+  const gitDir = common.stdout.trim()
+  if (!gitDir.endsWith('/.git')) return null
+  const main = gitDir.slice(0, -'/.git'.length)
+  if (main === root) return null
+  const db = `${main}/.codegraph/codegraph.db`
+
+  return (await $.fs.exists(db)) ? `${main}/.codegraph` : null
+}
+
 /** Where the session's git repo is, and whether it has a `.codegraph/` index. */
-async function probe($: EngineInterface) {
+async function probe($: EngineInterface): Promise<RepoIndex | null> {
   const cwd = await $.session.cwd()
   const git = await $.process.run(['git', 'rev-parse', '--show-toplevel'], { cwd }).catch(() => null)
   if (git === null || git.exitCode !== 0) {
     await update($, repo, () => null)
-    return
+    return null
   }
 
   const root = git.stdout.trim()
   const hasIndex = await $.fs.exists(`${root}/.codegraph`)
-  await update($, repo, (current): RepoIndex => {
-    // An init running for this repo keeps its phase until it ends.
-    if (current?.root === root && current.phase === 'indexing') return current
+  const seed = hasIndex ? null : await seedFor($, root)
 
-    return { root, name: root.slice(root.lastIndexOf('/') + 1), phase: hasIndex ? 'indexed' : 'missing' }
+  return update($, repo, (current): RepoIndex => {
+    // An init running, or failed, for this repo keeps its phase.
+    if (current?.root === root && (current.phase === 'indexing' || (current.phase === 'failed' && !hasIndex))) return current
+
+    return { root, name: root.slice(root.lastIndexOf('/') + 1), phase: hasIndex ? 'indexed' : 'missing', seed }
   })
+}
+
+type Step = readonly string[]
+
+/**
+ * The commands that index `target`: a linked worktree clones its main worktree's
+ * database (an APFS copy-on-write clone, so blocks stay shared until they change)
+ * and syncs the difference; anything else builds from scratch.
+ */
+function plan(target: RepoIndex): Step[] {
+  const dir = `${target.root}/.codegraph`
+  if (target.seed === null) return [['codegraph', 'init', '-y']]
+
+  return [
+    ['mkdir', '-p', dir],
+    ['cp', `${target.seed}/.gitignore`, `${dir}/.gitignore`],
+    ['cp', '-c', `${target.seed}/codegraph.db`, `${dir}/codegraph.db`],
+    ['codegraph', 'sync', target.root],
+  ]
+}
+
+async function runAll($: EngineInterface, cwd: string, steps: Step[]): Promise<string | null> {
+  for (const argv of steps) {
+    const { exitCode, stderr } = await $.process.run([...argv], { cwd, timeoutMs: INIT_TIMEOUT_MS })
+    if (exitCode !== 0) return `${argv.slice(0, 2).join(' ')}: ${stderr.trim().split('\n').pop() ?? `exit ${exitCode}`}`
+  }
+
+  return null
 }
 
 async function init($: EngineInterface): Promise<string> {
@@ -37,23 +83,31 @@ async function init($: EngineInterface): Promise<string> {
 
   await setPhase('indexing')
   // Runs on after the command answers; the band shows progress, a toast the end.
-  void $.process
-    .run(['codegraph', 'init', '-y'], { cwd: target.root, timeoutMs: INIT_TIMEOUT_MS })
-    .then(async ({ exitCode, stderr }) => {
-      if (exitCode === 0) {
-        await setPhase('indexed')
-        $.ui.toast(`codegraph indexed ${target.name}`)
-        return
-      }
-      await setPhase('failed')
-      $.ui.toast(`codegraph init failed in ${target.name}: ${stderr.trim().split('\n').pop() ?? `exit ${exitCode}`}`)
-    })
-    .catch(async (error: unknown) => {
-      await setPhase('failed')
-      $.ui.toast(`codegraph init could not run: ${String(error)}`)
-    })
+  void (async () => {
+    let failure = await runAll($, target.root, plan(target))
+    // A seed that will not clone or sync falls back to a full rebuild over it.
+    if (failure !== null && target.seed !== null) failure = await runAll($, target.root, [['codegraph', 'index', target.root]])
+    if (failure === null) {
+      await setPhase('indexed')
+      $.ui.toast(`codegraph indexed ${target.name}${target.seed === null ? '' : ' (seeded from the main worktree)'}`)
+      return
+    }
+    await setPhase('failed')
+    $.ui.toast(`codegraph init failed in ${target.name}: ${failure}`)
+  })().catch(async (error: unknown) => {
+    await setPhase('failed')
+    $.ui.toast(`codegraph init could not run: ${String(error)}`)
+  })
 
-  return `Indexing ${target.name} with codegraph in the background.`
+  return target.seed === null
+    ? `Indexing ${target.name} with codegraph in the background.`
+    : `Seeding ${target.name}'s codegraph index from the main worktree in the background.`
+}
+
+/** A linked worktree whose main worktree is indexed gets its own index without asking. */
+async function probeAndSeed($: EngineInterface) {
+  const found = await probe($)
+  if (found?.phase === 'missing' && found.seed !== null) await init($)
 }
 
 export const register: Register = on => {
@@ -63,7 +117,7 @@ export const register: Register = on => {
       description: 'Build the codegraph index for the current git repository',
     })
     const started = await next(e)
-    await probe($).catch(() => undefined)
+    await probeAndSeed($).catch(() => undefined)
 
     return started
   })
@@ -73,7 +127,7 @@ export const register: Register = on => {
   // A Bash `cd` can move the session into another repo.
   on('turn.complete', async ($, e, next) => {
     const done = await next(e)
-    if (e.agentId === undefined) await probe($).catch(() => undefined)
+    if (e.agentId === undefined) await probeAndSeed($).catch(() => undefined)
 
     return done
   })

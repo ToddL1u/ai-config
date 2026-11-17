@@ -53,7 +53,8 @@ Scope: <one of>
 Requirements (if any): <spec / ticket / acceptance criteria, or "none supplied">
 
 Trace the blast radius first: for every changed symbol, contract, and config
-value, search the repo for its callers, importers, and consumers, and check
+value, find its callers, importers, and consumers (`codegraph callers` and
+`codegraph impact` when the repo has a `.codegraph/` index, else search), and check
 CODEOWNERS or other ownership files for who owns each touched and affected
 path. Then focus on correctness, regressions, async and state races, error
 handling, security, data loss, and missing tests. Skip style nits.

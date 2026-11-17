@@ -13,8 +13,9 @@ not write tests or implementation.
 1. Read the planned behavior, repository instructions, domain documentation,
    relevant code, and any approved spec or ticket.
 2. Identify the public interfaces through which the behavior can be observed.
-3. Search using repository conventions for existing unit, integration,
-   contract, and end-to-end tests around those interfaces.
+3. Search for existing unit, integration, contract, and end-to-end tests
+   around those interfaces: `codegraph affected <files>` in an indexed
+   repository, then repository conventions for what it misses.
 4. Read the relevant tests and record their scenarios, assertions, style,
    fixtures, and external boundaries.
 5. Prefer the highest stable existing seam that proves the behavior. Propose a
