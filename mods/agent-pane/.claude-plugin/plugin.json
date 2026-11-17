@@ -1,0 +1,6 @@
+{
+  "name": "agent-pane",
+  "version": "0.1.0",
+  "description": "Right-side pane with one entry per subagent: type, task, current tool, elapsed time, tokens",
+  "types": "./types/index.d.ts"
+}
