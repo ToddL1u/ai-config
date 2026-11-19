@@ -19,11 +19,22 @@ Stop with a clear message if `codex` is not on `PATH`.
 Use one mode and record its base and `HEAD` SHAs:
 
 - **WIP** — the working tree is dirty: review all staged, unstaged, and
-  untracked changes against `HEAD`.
+  untracked changes. Prefer the original task fixed point supplied by
+  `dev-flow` or its progress record, including all commits since that point.
+  Use `HEAD` only for an explicitly uncommitted-only review or when it is
+  verified that no task changes were committed. If prior work could be omitted,
+  resolve the baseline or ask; do not silently narrow the review.
 - **Branch** — clean feature branch: base is `git merge-base <base> HEAD`.
   Default `<base>` to the user's stated branch, else `main`, else `master`.
   Ask if none exists or the choice could omit work.
 - **Commit** — the user named a commit: review that commit only.
+
+Validate that a supplied fixed point exists and is an ancestor of `HEAD`.
+Use it in preference to an inferred branch base for a whole-task review.
+Record pre-existing unrelated changes separately. Capture the reviewed `HEAD`
+and a fingerprint of the complete diff and untracked contents; recheck them
+before relaying the verdict. If either changed, label the report stale and
+review the updated target before claiming readiness.
 
 Also collect any spec, ticket, or acceptance criteria the user supplied. Never
 infer requirements from code or branch names.
@@ -46,7 +57,8 @@ Review these changes in <repo path>. This is a read-only review: do not edit,
 stage, or commit anything.
 
 Scope: <one of>
-- uncommitted changes: `git diff HEAD` plus untracked files (`git status --short`)
+- WIP task changes: `git diff <fixed-point-sha>` plus complete untracked files
+  (`git status --short`); include committed, staged, and unstaged task changes
 - branch: `git diff <base-sha>...<head-sha>`
 - commit: `git show <sha>`
 
@@ -140,9 +152,23 @@ Base: <sha>  HEAD: <sha>
 <Codex report, unchanged>
 ```
 
-Keep every finding as Codex ranked it. When a finding contradicts something
-you can check quickly, add a short `Caller notes` section after the report,
-labeled as your own and written in Traditional Chinese.
+Do not re-rank, merge, or drop findings. After the unchanged report, add a
+separate `Caller cross-check` in Traditional Chinese. For each finding, retain
+its original severity and report:
+
+- assessment: `Supported`, `Not supported`, or `Unresolved`;
+- concrete code, requirement, or test evidence and the reasoning;
+- recommended action and any decision needed from the user.
+
+An unsupported rebuttal is not evidence. Leave unverified claims `Unresolved`.
+Do not suppress the original verdict or silently dismiss a finding. The user
+makes the final disposition; this review remains read-only.
+
+After the user authorizes corrections, return them to the implementation
+workflow. Require affected tests and checks to be rerun, then re-review the
+complete updated task from the same fixed point, including corrections.
+Report which findings are resolved, remain, or are new, with evidence. A prior
+`READY` verdict does not apply to changed code. Do not commit as part of review.
 
 ## Guardrails
 

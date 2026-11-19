@@ -8,11 +8,12 @@ Deliver the requested feature with objective evidence that its acceptance criter
 
 1. **Inspect** — read the request, repository guidance, relevant code, tests, and similar implementations.
 2. **Specify** — for a raw request, write acceptance criteria, scope,
-   constraints, and verification commands. For an approved spec, import those
+   constraints, and verification commands. For a confirmed handoff, preserve its decisions and
+   acceptance criteria and fill only genuine gaps. For an approved spec, import those
    elements without rewriting them. For an approved ticket, import its
    acceptance criteria and its parent spec's boundaries without rewriting
    either. Surface material ambiguity or contradiction before coding.
-3. **Plan** — for a raw request or approved spec, choose the smallest
+3. **Plan** — for a raw request, confirmed handoff, or approved spec, choose the smallest
    independently verifiable implementation slice. For an approved ticket, use
    that ticket as the slice and proceed to implementation without decomposing
    it again.

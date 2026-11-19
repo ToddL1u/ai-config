@@ -1,0 +1,6 @@
+interface:
+  display_name: "Video Transcribe"
+  short_description: "Transcribe online videos to Markdown locally"
+  default_prompt: "Use $video-transcribe to transcribe these videos into Markdown."
+policy:
+  allow_implicit_invocation: false

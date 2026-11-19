@@ -4,6 +4,17 @@
 
 [Requested outcome]
 
+## Review context
+
+- Feature / ticket: [identity]
+- Original fixed point: [full commit SHA; preserve when resuming]
+- Initial working-tree status: [pre-existing changes and ownership]
+- Requirement sources: [Jira / PRD / Figma / handoff references and versions or retrieval dates]
+- Testing strategy: [approved source / test-impact / TDD exception; seams and commands]
+- Latest review: [reviewer, fixed point, reviewed HEAD and working-tree snapshot, verdict]
+- Findings and dispositions: [finding, evidence, user decision, correction, re-verification / re-review]
+- Product / visual acceptance: [user-reported or observed evidence; pending checks]
+
 ## Acceptance criteria
 
 - [ ] [Observable result]

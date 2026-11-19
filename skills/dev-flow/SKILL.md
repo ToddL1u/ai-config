@@ -10,11 +10,19 @@ Implement one feature to verified completion without requiring turn-by-turn prom
 ## Start
 
 1. Read the request, repository instructions, and relevant project documentation.
-2. Before any implementation edit, record the current `HEAD` commit as the
-   review fixed point and capture the initial working-tree status. Keep this
-   fixed point for every implementation/review iteration in this run.
+2. Before any implementation edit, inspect existing progress for this feature.
+   On continuation, reuse its original review fixed point; never reset it to
+   the current `HEAD`. For new work, record the current `HEAD` and initial
+   working-tree status. If work already exists and no reliable baseline is
+   available, resolve it from history or ask rather than omit prior changes.
+   Keep the same fixed point through commits, corrections, and resumed sessions.
+   Identify pre-existing changes separately; do not overwrite or claim them.
 3. Classify the input:
    - **Raw request** — derive acceptance criteria during the Specify step.
+   - **Confirmed handoff** — import the user-confirmed grilling objective,
+     decisions, constraints, exclusions, success criteria, and source references.
+     Preserve confirmed decisions; investigate only missing information or new
+     contradictions. Confirmation does not imply external stakeholder approval.
    - **Approved spec** — treat its goals, required behavior, non-goals,
      constraints, and testing decisions as authoritative. Record its stable
      reference and version. Do not re-specify or reopen confirmed decisions.
@@ -41,9 +49,15 @@ Implement one feature to verified completion without requiring turn-by-turn prom
 4. Record the authoritative review sources:
    - approved ticket and parent spec references and versions;
    - board card key, board path, and the card's source references;
-   - approved spec reference and version; or
+   - approved spec reference and version;
+   - confirmed handoff and its requirement source references; or
    - acceptance criteria, constraints, and non-goals derived from a raw
      request.
+   For ticket work, inspect the supplied Jira, PRD, and Figma sources relevant
+   to the slice. Record their versions or retrieval dates and discrepancies.
+   Do not silently treat inaccessible sources as checked or invent precedence
+   when they conflict. Distinguish user engineering decisions from product or
+   design decisions that require the responsible stakeholder's confirmation.
 5. Read [references/feature-standards.md](references/feature-standards.md).
 6. Read [references/feature-loop.md](references/feature-loop.md) and follow it until a terminal state is reached.
 7. For work that will span multiple iterations or sessions, copy [assets/feature-progress.md](assets/feature-progress.md) to `.ai/feature-progress.md`. Reuse an existing file for the same feature; do not erase useful history.
@@ -58,7 +72,8 @@ Use the repository's own commands and conventions. Do not assume a framework, pa
 ## Compose existing skills
 
 - Invoke `understand-feature` when entry points, dependencies, or the current behavior are unclear.
-- Invoke `test-impact` for a non-trivial raw request, or when an approved test
+- Invoke `test-impact` for a non-trivial raw request or confirmed handoff without
+  an established testing strategy, or when an approved test
   seam is missing, stale, or contradicted by repository evidence. Do not
   rediscover a valid seam already approved by a spec or ticket.
 - Invoke `tdd` by default for executable behavior at an approved public seam.
@@ -68,6 +83,13 @@ Use the repository's own commands and conventions. Do not assume a framework, pa
 - Invoke `review-sweep` in WIP mode after verification passes and before
   declaring success. Pass the recorded fixed point and authoritative sources so
   the review includes committed, staged, unstaged, and untracked work.
+- When the user requests `codex-review`, pass the same original fixed point,
+  requirement sources, and verification evidence. Keep it separate from the
+  internal `review-sweep`; do not add an unsolicited second-model review.
+  After the user's disposition of findings, implement authorized corrections,
+  rerun affected checks, and request Codex re-review of the complete updated
+  task from the same fixed point. Apply the existing repair limits and report
+  unresolved findings; do not commit on the strength of a stale review.
 - Invoke `parallel-work` only when at least two bounded subtasks are independent
   and parallelism provides meaningful benefit. Keep this skill's lifecycle,
   integration, and final verification with the parent agent.

@@ -1,1 +1,1 @@
-{ "name": "activity-bar", "version": "0.1.0", "description": "Status line showing whether Claude is working, waiting on you, idle, or stalled" }
+{ "name": "activity-bar", "version": "0.2.0", "description": "Status line showing whether Claude is working, waiting on you, idle, or stalled, plus a row per running subagent", "types": "./types/index.d.ts" }

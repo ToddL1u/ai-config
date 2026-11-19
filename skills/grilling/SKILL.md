@@ -25,10 +25,16 @@ or invoke a downstream workflow.
 When the user confirms shared understanding, return a concise handoff containing:
 
 - objective;
-- confirmed decisions;
+- confirmed decisions and their rationale;
+- requirement source references and versions or retrieval dates;
 - constraints and explicit exclusions;
 - observable success criteria;
-- unresolved questions, if any.
+- established testing strategy or seams, if discussed;
+- unresolved questions, including any stakeholder confirmation still required.
+
+Label user-confirmed decisions explicitly so a downstream workflow can import
+them without repeating the interview. Do not imply stakeholder approval that
+was not actually obtained.
 
 Then stop. The user chooses whether and when to invoke the next skill.
 

@@ -1,16 +1,31 @@
+import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
-import { describe, detailOf, initial } from './activity'
+import { describe, describeAgents, detailOf, initial } from './activity'
 import type { Activity, Kind } from './activity'
+import type { AgentLines } from '../types'
+
+/** The band's rows, one per running subagent; in $.state so a write redraws the band. */
+const agentLines = atom({ plugin: 'activity-bar', key: 'agentLines' } as const, [] as AgentLines)
 
 // Module state: a reload starts it over, which only blanks the line until the next event.
 let a: Activity = initial()
 let shown: string | undefined
 let lastKind: Kind | null = null
 let stopTicker: (() => void) | undefined
+let shownAgents = ''
+/** What each spawn was asked to do, by agentId; its turn.start may arrive before the spawn resolves. */
+const spawned = new Map<string, { type: string; description: string }>()
 
 async function refresh($: EngineInterface) {
-  const line = describe(a, await $.clock.now())
+  const now = await $.clock.now()
+  const rows = describeAgents(a, now)
+  const key = rows.join('\n')
+  if (key !== shownAgents) {
+    shownAgents = key
+    await update($, agentLines, () => rows)
+  }
+  const line = describe(a, now)
   if (line?.kind === 'stalled' && lastKind !== 'stalled') {
     await $.ui.notify(line.text.replace(/^⚠ /, ''), { title: 'Claude may be stuck' }).catch(() => undefined)
   }
@@ -35,6 +50,9 @@ export const register: Register = on => {
     a = initial()
     shown = undefined
     lastKind = null
+    shownAgents = ''
+    spawned.clear()
+    await update($, agentLines, () => [])
     $.ui.status(undefined)
     stopTicker?.()
     const timer = $.clock.every(1_000, () => tick($))
@@ -44,20 +62,41 @@ export const register: Register = on => {
 
   on('turn.start', async ($, e, next) => {
     const now = await $.clock.now()
-    a = e.agentId === undefined
-      ? { ...a, turnStartedAt: now, lastSignAt: now, tools: [], agents: 0 }
-      : { ...a, agents: a.agents + 1, lastSignAt: now }
+    const id = e.agentId
+    // Background subagents outlive the main turn, so their rows and tools stay.
+    if (id === undefined) {
+      a = { ...a, turnStartedAt: now, lastSignAt: now, tools: a.tools.filter(t => t.agentId !== undefined) }
+    } else if (!a.agents.some(g => g.id === id)) {
+      const meta = spawned.get(id) ?? { type: 'agent', description: '' }
+      a = { ...a, agents: [...a.agents, { id, ...meta, startedAt: now }], lastSignAt: now }
+    }
     await refresh($)
     return next(e)
   })
 
   on('turn.complete', async ($, e, next) => {
     const now = await $.clock.now()
-    a = e.agentId === undefined
-      ? { ...a, turnStartedAt: null, lastTurnEndedAt: now, isStreaming: false, tools: [], agents: 0 }
-      : { ...a, agents: Math.max(0, a.agents - 1), lastSignAt: now }
+    const id = e.agentId
+    if (id === undefined) {
+      a = { ...a, turnStartedAt: null, lastTurnEndedAt: now, isStreaming: false, tools: a.tools.filter(t => t.agentId !== undefined) }
+    } else {
+      spawned.delete(id)
+      a = { ...a, agents: a.agents.filter(g => g.id !== id), tools: a.tools.filter(t => t.agentId !== id), lastSignAt: now }
+    }
     await refresh($)
     return next(e)
+  })
+
+  on('agent.spawn', async ($, e, next) => {
+    const result = await next(e)
+    const id = result.agentId
+    if (id === undefined) return result
+    const meta = { type: e.subagentType, description: e.description }
+    spawned.set(id, meta)
+    a = { ...a, agents: a.agents.map(g => (g.id === id ? { ...g, ...meta } : g)) }
+    // The spawn's result must reach the engine even if drawing fails.
+    await refresh($).catch(() => undefined)
+    return result
   })
 
   // Each streamed chunk is a sign of life; silence while streaming is what "stalled" measures.
@@ -112,5 +151,20 @@ export const register: Register = on => {
       await refresh($)
     }
     return verdict
+  })
+
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    const rows = await read($, agentLines)
+    if (rows.length === 0 || e.props.hasSurvey) return next(e)
+    const { Box, Text } = $.ui.resolve(e)
+    return (
+      <Box flexDirection="column">
+        {rows.map((row, i) => (
+          <Text key={String(i)} dimColor={!row.startsWith('⏸')} color={row.startsWith('⏸') ? 'warning' : undefined} wrap="truncate-end">
+            {row}
+          </Text>
+        ))}
+      </Box>
+    )
   })
 }

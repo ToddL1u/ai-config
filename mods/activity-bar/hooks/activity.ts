@@ -8,8 +8,11 @@ export type Activity = {
   lastSignAt: number
   isStreaming: boolean
   tools: Tool[]
-  agents: number
+  /** Subagents whose loop is running, oldest first. */
+  agents: Agent[]
 }
+
+export type Agent = { id: string; type: string; description: string; startedAt: number }
 
 /** Model streaming silent this long reads as stalled. */
 export const QUIET_MS = 90_000
@@ -24,7 +27,7 @@ export const initial = (): Activity => ({
   lastSignAt: 0,
   isStreaming: false,
   tools: [],
-  agents: 0,
+  agents: [],
 })
 
 export function duration(ms: number): string {
@@ -35,12 +38,16 @@ export function duration(ms: number): string {
   return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}m`
 }
 
+const clip = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s)
+
 export function detailOf(tool: string, input: Record<string, unknown>): string {
   const pick = input.command ?? input.description ?? input.file_path ?? input.pattern ?? input.url
   if (typeof pick !== 'string') return ''
   const one = (pick.split('\n')[0] ?? '').trim()
-  return one.length > 40 ? `${one.slice(0, 39)}…` : one
+  return clip(one, 40)
 }
+
+const label = (t: Tool) => `${t.tool}${t.detail ? ` ${t.detail}` : ''}`
 
 export type Kind = 'idle' | 'working' | 'waiting' | 'stalled'
 
@@ -54,8 +61,8 @@ export function describe(a: Activity, now: number): Line | null {
   }
 
   const total = duration(now - a.turnStartedAt)
-  const agents = a.agents > 0 ? ` · ${a.agents} agent${a.agents > 1 ? 's' : ''}` : ''
-  const label = (t: Tool) => `${t.tool}${t.detail ? ` ${t.detail}` : ''}`
+  const n = a.agents.length
+  const agents = n > 0 ? ` · ${n} agent${n > 1 ? 's' : ''}` : ''
 
   const approval = a.tools.find(t => t.isAwaitingApproval)
   if (approval) {
@@ -79,4 +86,16 @@ export function describe(a: Activity, now: number): Line | null {
     return { kind: 'stalled', text: `⚠ no output for ${duration(quiet)} · turn ${total}${agents} · Esc to interrupt` }
   }
   return { kind: 'working', text: `● ${a.isStreaming ? 'thinking' : 'working'} · turn ${total}${agents}` }
+}
+
+/** One line per running subagent: its type, task, and what its loop is doing now. */
+export function describeAgents(a: Activity, now: number): string[] {
+  return a.agents.map(agent => {
+    const head = `${agent.type}${agent.description ? ` · ${clip(agent.description, 30)}` : ''}`
+    const total = duration(now - agent.startedAt)
+    const tool = a.tools.filter(t => t.agentId === agent.id).at(-1)
+    if (tool?.isAwaitingApproval) return `⏸ ${head} · needs approval · ${label(tool)} · ${total}`
+    if (tool) return `◆ ${head} · ${label(tool)} ${duration(now - tool.startedAt)} · ${total}`
+    return `◆ ${head} · thinking · ${total}`
+  })
 }

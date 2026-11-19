@@ -310,6 +310,13 @@ Read-only investigations enter at `understand-feature`.
   article, video, or podcast and saved to Notion.
 - **Prompt:** `/english-learn https://example.com/article, focusing on business vocabulary.`
 
+### `video-transcribe`
+
+- **Use when:** You want online videos (public pages or a logged-in course
+  platform) turned into local timestamped Markdown transcripts, optionally
+  with summaries.
+- **Prompt:** `/video-transcribe Transcribe every unit of the course open in my Chrome tab into materials/.`
+
 ### `notion-add`
 
 - **Use when:** You explicitly want to create or update a Notion page or
